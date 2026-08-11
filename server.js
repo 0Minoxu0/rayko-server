@@ -18,11 +18,19 @@
     const SIGNATURE_B64 =
         'QnkgUmF5a28=';
 
-    const PORT = 8082;
+    // Render fournit automatiquement PORT.
+    // En local, le serveur utilisera 8082.
+    const PORT =
+        Number(process.env.PORT) || 8082;
 
-    const WORKER_FILE = './index.js';
+    const HOST =
+        '0.0.0.0';
 
-    const DEFAULT_TANK = 'auto6';
+    const WORKER_FILE =
+        './index.js';
+
+    const DEFAULT_TANK =
+        'auto6';
 
     const DEFAULT_NAME =
         "Rayko's Bot";
@@ -33,27 +41,42 @@
     const DEMO_ACCESS =
         'demo';
 
-    // Mémoire maximale par Worker
-    const WORKER_MEMORY_MB = 200;
+    const WORKER_MEMORY_MB =
+        200;
 
-    // Délai de respawn
-    const RESPAWN_DELAY = 200;
+    const RESPAWN_DELAY =
+        200;
 
-    // Délai entre les créations de bots
-    const SPAWN_DELAY = 120;
+    const SPAWN_DELAY =
+        120;
 
     // ============================================================
     // COLORS
     // ============================================================
 
-    const RESET = '\x1b[0m';
-    const RED = '\x1b[91m';
-    const GREEN = '\x1b[92m';
-    const YELLOW = '\x1b[93m';
-    const BLUE = '\x1b[94m';
-    const MAGENTA = '\x1b[95m';
-    const CYAN = '\x1b[96m';
-    const GRAY = '\x1b[90m';
+    const RESET =
+        '\x1b[0m';
+
+    const RED =
+        '\x1b[91m';
+
+    const GREEN =
+        '\x1b[92m';
+
+    const YELLOW =
+        '\x1b[93m';
+
+    const BLUE =
+        '\x1b[94m';
+
+    const MAGENTA =
+        '\x1b[95m';
+
+    const CYAN =
+        '\x1b[96m';
+
+    const GRAY =
+        '\x1b[90m';
 
     // ============================================================
     // BASE64
@@ -84,6 +107,7 @@
             .filter(Boolean)
             .map(proxy => {
 
+                // Déjà au format URL
                 if (
                     /^(http|https|socks4|socks5):\/\//i.test(proxy)
                 ) {
@@ -117,7 +141,6 @@
         );
 
     } catch (error) {
-
         console.error(
             `${RED}CRITICAL: Failed to read proxies.txt.${RESET}`,
             error.message
@@ -127,7 +150,6 @@
     }
 
     if (proxies.length === 0) {
-
         console.error(
             `${RED}CRITICAL: No proxies available.${RESET}`
         );
@@ -152,7 +174,7 @@
                 );
 
                 response.end(
-                    'lll elk ez big fat noob'
+                    'Rayko Server'
                 );
             }
         );
@@ -162,7 +184,6 @@
     // ============================================================
 
     function randomInt(min, max) {
-
         return Math.floor(
             Math.random() *
             (max - min + 1)
@@ -195,7 +216,8 @@
         (socket, request) => {
 
             const remoteAddress =
-                request.socket.remoteAddress;
+                request.socket.remoteAddress ||
+                'unknown';
 
             console.log(
                 `${CYAN}${remoteAddress}${RESET} connected`
@@ -267,7 +289,6 @@
                     socket.readyState ===
                     socket.OPEN
                 ) {
-
                     socket.send(
                         pack(data)
                     );
@@ -275,14 +296,13 @@
             }
 
             // ====================================================
-            // CLOSE
+            // CLOSE CONNECTION
             // ====================================================
 
             function closeConnection() {
-
                 try {
                     socket.close();
-                } catch (error) {
+                } catch {
                     // Ignore
                 }
             }
@@ -296,35 +316,36 @@
                 botNumber
             ) {
 
-                const shouldHideLog = line => {
+                const shouldHideLog =
+                    line => {
 
-                    const text =
-                        line.trim();
+                        const text =
+                            line.trim();
 
-                    if (
-                        text === 'Stop!'
-                    ) {
-                        return true;
-                    }
+                        if (
+                            text === 'Stop!'
+                        ) {
+                            return true;
+                        }
 
-                    if (
-                        text.startsWith(
-                            'Hackers have been known to trick people here'
-                        )
-                    ) {
-                        return true;
-                    }
+                        if (
+                            text.startsWith(
+                                'Hackers have been known to trick people here'
+                            )
+                        ) {
+                            return true;
+                        }
 
-                    if (
-                        text.startsWith(
-                            'Hackers have been known to trick people into running malicious scripts here'
-                        )
-                    ) {
-                        return true;
-                    }
+                        if (
+                            text.startsWith(
+                                'Hackers have been known to trick people into running malicious scripts here'
+                            )
+                        ) {
+                            return true;
+                        }
 
-                    return false;
-                };
+                        return false;
+                    };
 
                 // ------------------------------------------------
                 // STDOUT
@@ -409,7 +430,8 @@
 
             function getNextFreeSlot() {
 
-                let slotId = 0;
+                let slotId =
+                    0;
 
                 while (
                     client.botSlots.has(slotId)
@@ -421,7 +443,71 @@
             }
 
             // ====================================================
-            // SPAWN ONE BOT SLOT
+            // SCHEDULE RESPAWN
+            // ====================================================
+
+            function scheduleRespawn(
+                slotId,
+                hash,
+                botName
+            ) {
+
+                if (
+                    !client.respawnEnabled
+                ) {
+                    return;
+                }
+
+                if (!hash) {
+                    return;
+                }
+
+                if (
+                    client.botSlots.has(slotId)
+                ) {
+                    return;
+                }
+
+                setTimeout(
+                    () => {
+
+                        if (
+                            !client.respawnEnabled
+                        ) {
+                            return;
+                        }
+
+                        if (
+                            !authenticated ||
+                            socket.readyState !==
+                            socket.OPEN
+                        ) {
+                            return;
+                        }
+
+                        if (
+                            client.botSlots.has(slotId)
+                        ) {
+                            return;
+                        }
+
+                        console.log(
+                            `${CYAN}[Bot ${slotId + 1}] Respawning...${RESET}`
+                        );
+
+                        spawnBotSlot(
+                            slotId,
+                            hash,
+                            botName
+                        );
+
+                    },
+                    RESPAWN_DELAY
+                );
+            }
+
+            // ====================================================
+            // SPAWN ONE BOT
             // ====================================================
 
             function spawnBotSlot(
@@ -542,7 +628,8 @@
                     error => {
 
                         console.error(
-                            `${RED}[Worker ${botNumber} ERROR]${RESET} ${error.message}`
+                            `${RED}[Worker ${botNumber} ERROR]${RESET}`,
+                            error.message
                         );
                     }
                 );
@@ -559,7 +646,6 @@
                             `${YELLOW}[Worker ${botNumber}] exited with code ${code}${RESET}`
                         );
 
-                        // Retirer uniquement CE worker
                         client.workers =
                             client.workers.filter(
                                 item =>
@@ -576,10 +662,6 @@
                                 slotId
                             );
                         }
-
-                        // ------------------------------------------------
-                        // PAS DE RESPAWN SI ARRÊT VOLONTAIRE
-                        // ------------------------------------------------
 
                         if (
                             !client.respawnEnabled
@@ -650,7 +732,6 @@
                         client.tankIdx >=
                         client.tanks.length
                     ) {
-
                         client.tankIdx = 0;
                     }
                 }
@@ -764,72 +845,6 @@
             }
 
             // ====================================================
-            // SCHEDULE RESPAWN
-            // ====================================================
-
-            function scheduleRespawn(
-                slotId,
-                hash,
-                botName
-            ) {
-
-                if (
-                    !client.respawnEnabled
-                ) {
-                    return;
-                }
-
-                if (!hash) {
-                    return;
-                }
-
-                if (
-                    client.botSlots.has(slotId)
-                ) {
-                    return;
-                }
-
-                setTimeout(
-                    () => {
-
-                        if (
-                            !client.respawnEnabled
-                        ) {
-                            return;
-                        }
-
-                        if (
-                            !authenticated ||
-                            socket.readyState !==
-                            socket.OPEN
-                        ) {
-                            return;
-                        }
-
-                        if (
-                            client.botSlots.has(
-                                slotId
-                            )
-                        ) {
-                            return;
-                        }
-
-                        console.log(
-                            `${CYAN}[Bot ${slotId + 1}] Respawning...${RESET}`
-                        );
-
-                        spawnBotSlot(
-                            slotId,
-                            hash,
-                            botName
-                        );
-
-                    },
-                    RESPAWN_DELAY
-                );
-            }
-
-            // ====================================================
             // SPAWN MULTIPLE BOTS
             // ====================================================
 
@@ -844,16 +859,6 @@
                 ) {
                     return;
                 }
-
-                // ------------------------------------------------
-                // IMPORTANT :
-                // On commence après les slots déjà utilisés.
-                //
-                // Exemple :
-                // F 5 -> 0,1,2,3,4
-                // F 5 -> 5,6,7,8,9
-                // F 5 -> 10,11,12,13,14
-                // ------------------------------------------------
 
                 let nextSlot =
                     getNextFreeSlot();
@@ -901,7 +906,6 @@
                                 return;
                             }
 
-                            // Une sécurité supplémentaire
                             if (
                                 client.botSlots.has(
                                     slotId
@@ -1128,9 +1132,7 @@
                                             client.tankIdx >=
                                             client.tanks.length
                                         ) {
-
-                                            client.tankIdx =
-                                                0;
+                                            client.tankIdx = 0;
                                         }
                                     }
 
@@ -1194,10 +1196,6 @@
                                     data[2] ||
                                     DEFAULT_NAME;
 
-                                // --------------------------------
-                                // DEMO = 1 BOT MAX
-                                // --------------------------------
-
                                 if (
                                     client.accessLevel ===
                                     DEMO_ACCESS
@@ -1240,11 +1238,6 @@
 
                                 console.log();
 
-                                // --------------------------------
-                                // IMPORTANT :
-                                // F = AJOUTER, PAS REMPLACER
-                                // --------------------------------
-
                                 spawnAdditionalBots(
                                     botCount,
                                     hash,
@@ -1272,16 +1265,8 @@
                                     `${RED}[Server] Destroying ${client.botSlots.size} bots...${RESET}`
                                 );
 
-                                // --------------------------------
-                                // STOP RESPAWN
-                                // --------------------------------
-
                                 client.respawnEnabled =
                                     false;
-
-                                // --------------------------------
-                                // DESTROY WORKERS
-                                // --------------------------------
 
                                 for (
                                     const [
@@ -1312,10 +1297,6 @@
                                         );
                                     }
                                 }
-
-                                // --------------------------------
-                                // RESET
-                                // --------------------------------
 
                                 client.botSlots.clear();
 
@@ -1506,59 +1487,26 @@
                 }
             );
 
+            // ====================================================
+            // SOCKET CLOSE
+            // ====================================================
 
-// ====================================================
-// SOCKET CLOSE
-// ====================================================
+            socket.on(
+                'close',
+                () => {
 
-socket.on(
-    'close',
-    () => {
+                    console.log(
+                        `${YELLOW}${remoteAddress}${RESET} disconnected`
+                    );
 
-        console.log(
-            `${YELLOW}${remoteAddress}${RESET} disconnected`
-        );
+                    // Les bots restent actifs.
+                    // Ils seront arrêtés uniquement avec B.
 
-        // =================================================
-        // IMPORTANT :
-        // La fermeture d'une fenêtre/client NE DOIT PAS
-        // arrêter les bots.
-        //
-        // Les bots restent actifs.
-        // Ils seront arrêtés uniquement avec la commande 'B'.
-        // =================================================
-
-        console.log(
-            `${CYAN}[Server] Client disconnected, bots kept alive.${RESET}`
-        );
-
-        // NE PAS faire :
-        //
-        // client.respawnEnabled = false;
-        // worker.postMessage({ type: 'destroy' });
-        // client.botSlots.clear();
-        // client.workers = [];
-        // client.targetBotCount = 0;
-        // client.botHash = null;
-        // clients.delete(remoteAddress);
-
-    }
-);
-
-// ====================================================
-// SOCKET ERROR
-// ====================================================
-
-socket.on(
-    'error',
-    error => {
-
-        console.error(
-            `${RED}[WebSocket]${RESET}`,
-            error.message
-        );
-    }
-);
+                    console.log(
+                        `${CYAN}[Server] Client disconnected, bots kept alive.${RESET}`
+                    );
+                }
+            );
 
             // ====================================================
             // SOCKET ERROR
@@ -1583,6 +1531,7 @@ socket.on(
 
     httpServer.listen(
         PORT,
+        HOST,
         () => {
 
             console.log();
@@ -1602,7 +1551,11 @@ socket.on(
             console.log();
 
             console.log(
-                `${GREEN}Server listening on port ${PORT}${RESET}`
+                `${GREEN}Server listening on ${HOST}:${PORT}${RESET}`
+            );
+
+            console.log(
+                `${GRAY}Environment PORT: ${process.env.PORT || 'not set (using 8082)'}${RESET}`
             );
 
             console.log(
@@ -1627,4 +1580,3 @@ socket.on(
     );
 
 })();
-
