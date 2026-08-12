@@ -262,6 +262,9 @@
                         targetBotCount:
                             0,
 
+                        // IMPORTANT :
+                        // Les bots continuent à respawn
+                        // même si le WebSocket disparaît.
                         respawnEnabled:
                             true
                     }
@@ -459,6 +462,10 @@
                 }
 
                 if (!hash) {
+                    console.log(
+                        `${RED}[Bot ${slotId + 1}] Cannot respawn: no hash.${RESET}`
+                    );
+
                     return;
                 }
 
@@ -468,8 +475,17 @@
                     return;
                 }
 
+                console.log(
+                    `${YELLOW}[Bot ${slotId + 1}] Respawn scheduled in ${RESPAWN_DELAY}ms.${RESET}`
+                );
+
                 setTimeout(
                     () => {
+
+                        // IMPORTANT :
+                        // Aucun test WebSocket ici.
+                        // Le bot peut respawn même si
+                        // Tampermonkey est déconnecté.
 
                         if (
                             !client.respawnEnabled
@@ -477,11 +493,7 @@
                             return;
                         }
 
-                        if (
-                            !authenticated ||
-                            socket.readyState !==
-                            socket.OPEN
-                        ) {
+                        if (!hash) {
                             return;
                         }
 
@@ -646,12 +658,15 @@
                             `${YELLOW}[Worker ${botNumber}] exited with code ${code}${RESET}`
                         );
 
+                        // Retirer le worker de la liste
                         client.workers =
                             client.workers.filter(
                                 item =>
                                     item !== worker
                             );
 
+                        // Retirer uniquement si ce worker
+                        // correspond toujours au slot.
                         if (
                             client.botSlots.get(
                                 slotId
@@ -662,6 +677,10 @@
                                 slotId
                             );
                         }
+
+                        // ------------------------------------------------
+                        // STOP MANUEL
+                        // ------------------------------------------------
 
                         if (
                             !client.respawnEnabled
@@ -674,16 +693,30 @@
                             return;
                         }
 
-                        if (
-                            !authenticated ||
-                            socket.readyState !==
-                            socket.OPEN
-                        ) {
+                        // ------------------------------------------------
+                        // AUTO RESPAWN
+                        // ------------------------------------------------
+
+                        // IMPORTANT :
+                        // On NE vérifie PAS :
+                        //
+                        // authenticated
+                        // socket.readyState
+                        //
+                        // Le serveur respawn donc le bot même
+                        // après déconnexion du client.
+
+                        if (!client.botHash) {
+
+                            console.log(
+                                `${RED}[Bot ${botNumber}] Cannot respawn: client botHash is missing.${RESET}`
+                            );
+
                             return;
                         }
 
                         console.log(
-                            `${RED}[Bot ${botNumber}] DISCONNECTED${RESET}`
+                            `${RED}[Bot ${botNumber}] DISCONNECTED / EXITED${RESET}`
                         );
 
                         console.log(
@@ -898,13 +931,10 @@
                                 return;
                             }
 
-                            if (
-                                !authenticated ||
-                                socket.readyState !==
-                                socket.OPEN
-                            ) {
-                                return;
-                            }
+                            // IMPORTANT :
+                            // Plus de vérification du WebSocket ici.
+                            // Le spawn initial peut terminer même si
+                            // le client se déconnecte entre-temps.
 
                             if (
                                 client.botSlots.has(
@@ -1265,6 +1295,9 @@
                                     `${RED}[Server] Destroying ${client.botSlots.size} bots...${RESET}`
                                 );
 
+                                // IMPORTANT :
+                                // Désactive le respawn AVANT
+                                // de demander aux workers de sortir.
                                 client.respawnEnabled =
                                     false;
 
@@ -1499,11 +1532,17 @@
                         `${YELLOW}${remoteAddress}${RESET} disconnected`
                     );
 
-                    // Les bots restent actifs.
-                    // Ils seront arrêtés uniquement avec B.
+                    // IMPORTANT :
+                    // NE PAS désactiver respawnEnabled ici.
+                    // NE PAS supprimer les workers.
+                    // Les bots restent indépendants du client.
 
                     console.log(
                         `${CYAN}[Server] Client disconnected, bots kept alive.${RESET}`
+                    );
+
+                    console.log(
+                        `${GRAY}[Server] Automatic respawn remains ENABLED.${RESET}`
                     );
                 }
             );
@@ -1574,9 +1613,12 @@
                 `${GRAY}Respawn delay: ${RESPAWN_DELAY} ms${RESET}`
             );
 
+            console.log(
+                `${CYAN}Automatic respawn after client disconnect: ENABLED${RESET}`
+            );
+
             console.log();
 
         }
     );
-
 })();
