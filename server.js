@@ -9,34 +9,26 @@
     // CONFIG
     // ============================================================
 
-    const ADMIN_CODE_B64 =
-        'eFE3TG05VnIyS3A4WmQ0VGY2TmMxV3k1SHMwQmQzVWE3SnE5UmsyRnA4WG00Vno3TG4xVGM2UXc5WWgzRHM1';
+    const PORT = 8082;
 
-    const DEMO_CODE_B64 =
-        'RnJlZUFjY2Vzcw==';
+    const AUTH_VALIDATE_URL =
+        process.env.AUTH_VALIDATE_URL ||
+        'http://127.0.0.1:8080/auth/validate';
 
-    const SIGNATURE_B64 =
-        'QnkgUmF5a28=';
-
-    // Render fournit automatiquement PORT.
-    // En local, le serveur utilisera 8082.
-    const PORT =
-        Number(process.env.PORT) || 8082;
-
-    const HOST =
-        '0.0.0.0';
+    const USAGE_FILE =
+        './usage_counts.json';
 
     const WORKER_FILE =
         './index.js';
 
     const DEFAULT_TANK =
-        'auto6';
+        'basic';
 
     const DEFAULT_NAME =
-        "Rayko's Bot";
+        "⟦𝑹⟧ Rayko's Bot";
 
-    const ADMIN_ACCESS =
-        'full';
+    const ROLE_ACCESS =
+        'authorized';
 
     const DEMO_ACCESS =
         'demo';
@@ -45,47 +37,305 @@
         200;
 
     const RESPAWN_DELAY =
-        200;
+        100;
 
     const SPAWN_DELAY =
-        120;
+        100;
 
     // ============================================================
     // COLORS
     // ============================================================
 
-    const RESET =
-        '\x1b[0m';
-
-    const RED =
-        '\x1b[91m';
-
-    const GREEN =
-        '\x1b[92m';
-
-    const YELLOW =
-        '\x1b[93m';
-
-    const BLUE =
-        '\x1b[94m';
-
-    const MAGENTA =
-        '\x1b[95m';
-
-    const CYAN =
-        '\x1b[96m';
-
-    const GRAY =
-        '\x1b[90m';
+    const RESET = '\x1b[0m';
+    const RED = '\x1b[91m';
+    const GREEN = '\x1b[92m';
+    const YELLOW = '\x1b[93m';
+    const BLUE = '\x1b[94m';
+    const MAGENTA = '\x1b[95m';
+    const CYAN = '\x1b[96m';
+    const GRAY = '\x1b[90m';
 
     // ============================================================
-    // BASE64
+    // RANDOM BOT NAMES
     // ============================================================
 
-    function decodeBase64(value) {
-        return Buffer
-            .from(value, 'base64')
-            .toString('utf8');
+    const RANDOM_BOT_FIRST_NAMES = [
+        'Jason', 'Hugo', 'Alice', 'Buck', 'Lucas', 'Emma',
+        'Nathan', 'Jack', 'Leo', 'Mia', 'Noah', 'Olivia',
+        'Ethan', 'Sophia', 'Liam', 'Ava', 'Mason', 'Isabella',
+        'Logan', 'Charlotte', 'Benjamin', 'Amelia', 'Henry',
+        'Harper', 'Daniel', 'Evelyn', 'Matthew', 'Abigail',
+        'Samuel', 'Emily', 'David', 'Ella', 'Joseph', 'Scarlett',
+        'Owen', 'Grace', 'Wyatt', 'Chloe', 'John', 'Victoria',
+        'Luke', 'Riley', 'Gabriel', 'Aria', 'Isaac', 'Lily',
+        'Anthony', 'Zoey', 'Dylan', 'Hannah', 'Carter', 'Layla',
+        'Julian', 'Nora', 'Caleb', 'Aurora', 'Ryan', 'Penelope',
+        'Adam', 'Stella', 'Andrew', 'Maya', 'Christopher', 'Ellie',
+        'Joshua', 'Hazel', 'Thomas', 'Luna', 'Charles', 'Lucy',
+        'Michael', 'Claire', 'Alexander', 'Sophie', 'Nicholas',
+        'Anna', 'James', 'Leah', 'William', 'Sarah', 'Robert',
+        'Madison', 'Eli', 'Natalie', 'Jacob', 'Ruby', 'Eva',
+        'Naomi', 'Isaiah', 'Ivy', 'Connor', 'Jasmine', 'Evan',
+        'Julia', 'Adrian', 'Lydia', 'Nathaniel', 'Clara', 'Aaron',
+        'Elise', 'Brandon', 'Sadie', 'Christian', 'Piper',
+        'Jonathan', 'Quinn', 'Cameron', 'Peyton', 'Dominic',
+        'Molly', 'Austin', 'Samantha', 'Jordan', 'Caroline',
+        'Tyler', 'Madeline', 'Blake', 'Kennedy', 'Colton', 'Willow',
+        'Gavin', 'Reagan', 'Hunter', 'Faith', 'Cooper', 'Ariana',
+        'Parker', 'Kaylee', 'Easton', 'Hailey', 'Xavier', 'Brianna',
+        'Jace', 'Nevaeh', 'Nolan', 'Adeline', 'Grayson', 'Genesis',
+        'Lincoln', 'Emery', 'Miles', 'Melanie', 'Jaxon', 'Valerie',
+        'Hudson', 'Isla', 'Asher', 'Vivian', 'Mateo', 'Delilah',
+        'Gabriella', 'Jade', 'Sawyer', 'Cora', 'Declan', 'Athena',
+        'Weston', 'Maria', 'Kai', 'Isabelle', 'Silas', 'Bennett',
+        'Rose', 'Waylon', 'Natalia', 'Luca', 'Eliana', 'Micah',
+        'Josephine', 'Roman', 'Iris', 'Damian', 'Lillian', 'Theo',
+        'Max', 'Eleanor', 'Finn', 'Addison', 'Elliot', 'Beau',
+        'Aubrey', 'Jonah', 'Savannah', 'Emmett', 'Brooklyn', 'Axel',
+        'Ryder', 'Skylar', 'Leon', 'Kinsley', 'Arthur', 'Everleigh',
+        'Milo', 'Aaliyah', 'Londyn', 'Felix', 'Raelynn', 'Oscar',
+        'Sienna', 'Louis', 'Camila', 'Maxwell', 'Eliza', 'Rosalie',
+        'Leonardo', 'Adriana', 'Wesley', 'Lyla', 'Vincent', 'Lola',
+        'Jasper', 'Cecilia', 'Lorenzo', 'Genevieve', 'Charlie',
+        'Maeve', 'Cole', 'Poppy', 'Millie', 'Alex', 'Esme',
+        'Zachary', 'Daisy', 'Edward', 'Freya', 'Franklin', 'Phoebe',
+        'George', 'Isabel', 'Amara', 'Margot', 'Eloise', 'Wren',
+        'Albert', 'Elsie', 'Calvin', 'Mabel', 'Elliott', 'Ada',
+        'Simon', 'Lena', 'Victor', 'Nina', 'Marcus', 'Lila', 'Eric',
+        'Kevin', 'Louise', 'Brian', 'Amelie', 'Camille', 'Derek',
+        'Manon', 'Alexis', 'Juliette', 'Maxime', 'Antoine', 'Ines',
+        'Zoé', 'Léa', 'Lou', 'Raphael', 'Paul', 'Mathis', 'Agathe',
+        'Nicolas', 'Jeanne', 'Lina', 'Mila', 'Enzo', 'Chloé', 'Tom',
+        'Alexandre', 'Anais', 'Margaux', 'Jules', 'Baptiste',
+        'Clémence', 'Lucie'
+    ];
+
+    const RANDOM_BOT_LAST_NAMES = [
+        'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia',
+        'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez',
+        'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas',
+        'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez',
+        'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez',
+        'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King',
+        'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores',
+        'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera',
+        'Campbell', 'Mitchell', 'Carter', 'Roberts', 'Gomez',
+        'Phillips', 'Evans', 'Turner', 'Diaz', 'Parker', 'Cruz',
+        'Edwards', 'Collins', 'Reyes', 'Stewart', 'Morris',
+        'Morales', 'Murphy', 'Cook', 'Rogers', 'Gutierrez', 'Ortiz',
+        'Morgan', 'Cooper', 'Peterson', 'Bailey', 'Reed', 'Kelly',
+        'Howard', 'Ramos', 'Kim', 'Cox', 'Ward', 'Richardson',
+        'Watson', 'Brooks', 'Chavez', 'Wood', 'James', 'Bennett',
+        'Gray', 'Mendoza', 'Ruiz', 'Hughes', 'Price', 'Alvarez',
+        'Castillo', 'Sanders', 'Patel', 'Myers', 'Long', 'Ross',
+        'Foster', 'Jimenez', 'Powell', 'Jenkins', 'Perry', 'Russell',
+        'Sullivan', 'Bell', 'Coleman', 'Butler', 'Henderson',
+        'Barnes', 'Fisher', 'Vasquez', 'Simmons', 'Romero', 'Jordan',
+        'Patterson', 'Alexander', 'Hamilton', 'Graham', 'Reynolds',
+        'Griffin', 'Wallace', 'Moreno', 'West', 'Cole', 'Hayes',
+        'Bryant', 'Herrera', 'Gibson', 'Ellis', 'Tran', 'Medina',
+        'Aguilar', 'Stevens', 'Murray', 'Ford', 'Castro', 'Marshall',
+        'Owens', 'Harrison', 'Fernandez', 'McDonald', 'Woods',
+        'Washington', 'Kennedy', 'Wells', 'Vargas', 'Henry', 'Chen',
+        'Freeman', 'Webb', 'Tucker', 'Guzman', 'Burns', 'Crawford',
+        'Olson', 'Simpson', 'Porter', 'Hunter', 'Gordon', 'Mendez',
+        'Silva', 'Shaw', 'Snyder', 'Mason', 'Dixon', 'Munoz', 'Hunt',
+        'Hicks', 'Holmes', 'Palmer', 'Wagner', 'Black', 'Robertson',
+        'Boyd', 'Rose', 'Stone', 'Salazar', 'Fox', 'Warren', 'Mills',
+        'Meyer', 'Rice', 'Schmidt', 'Garza', 'Daniels', 'Ferguson',
+        'Nichols', 'Stephens', 'Soto', 'Weaver', 'Ryan', 'Gardner',
+        'Payne', 'Grant', 'Dunn', 'Kelley', 'Spencer', 'Hawkins',
+        'Arnold', 'Pierce', 'Vazquez', 'Hansen', 'Peters', 'Santos',
+        'Hart', 'Bradley', 'Knight', 'Elliott', 'Cunningham',
+        'Duncan', 'Armstrong', 'Hudson', 'Carroll', 'Lane', 'Riley',
+        'Andrews', 'Alvarado', 'Ray', 'Delgado', 'Berry', 'Perkins',
+        'Hoffman', 'Johnston', 'Matthews', 'Pena', 'Richards',
+        'Contreras', 'Willis', 'Carpenter', 'Lawrence', 'Sandoval',
+        'Guerrero', 'George', 'Chapman', 'Rios', 'Estrada', 'Ortega',
+        'Watkins', 'Greene', 'Norton', 'Middleton', 'Sparks',
+        'Manning', 'Parks', 'Vaughn', 'Meyers', 'Schultz', 'Douglas',
+        'Fleming', 'Jensen', 'Hancock', 'Morrison', 'Stephenson',
+        'Garrett', 'Harper', 'Bates', 'Mack', 'Hale', 'Cameron',
+        'Bentley', 'Bishop', 'McKenzie', 'McCarthy', 'Maldonado',
+        'McDaniel', 'McLean', 'Roth', 'Fritz', 'Schneider', 'Keller',
+        'Weber', 'Klein', 'Wolf', 'Schwartz', 'Zimmerman', 'Krause',
+        'Kruger', 'Fischer', 'Becker', 'Hartmann', 'Richter', 'Braun',
+        'Hoffmann', 'Schmitt', 'Neumann', 'Kaiser', 'Vogel', 'Dupont',
+        'Bernard', 'Dubois', 'Robert', 'Richard', 'Petit', 'Durand',
+        'Leroy', 'Moreau', 'Simon', 'Laurent', 'Lefebvre', 'Michel',
+        'Bertrand', 'Roux', 'Vincent', 'Fournier', 'Morel', 'Girard',
+        'Andre', 'Lefevre', 'Mercier', 'Dupuis', 'Lambert', 'Bonnet',
+        'Francois', 'Martins', 'Legrand', 'Garnier', 'Faure',
+        'Rousseau', 'Blanc', 'Guerin', 'Muller', 'Roussel',
+        'Nicolas', 'Perrin', 'Morin', 'Mathieu', 'Clement', 'Gauthier',
+        'Dumont', 'Fontaine', 'Chevalier', 'Robin', 'Masson',
+        'Gerard', 'Boyer', 'Denis', 'Lemaire', 'Duval', 'Joly',
+        'Giraud', 'Roger', 'Renard', 'Marchand', 'Aubry', 'Barbier',
+        'Arnaud', 'Picard', 'Lemoine', 'Philippe'
+    ];
+
+    const RANDOM_BOT_NAMES =
+        RANDOM_BOT_FIRST_NAMES.flatMap(
+            firstName =>
+                RANDOM_BOT_LAST_NAMES.map(
+                    lastName =>
+                        `${firstName} ${lastName}`
+                )
+        );
+
+    // ============================================================
+    // PERSISTENT BOT USAGE
+    // ============================================================
+
+    function loadUsageCounts() {
+
+        try {
+
+            const data =
+                JSON.parse(
+                    fs.readFileSync(
+                        USAGE_FILE,
+                        'utf8'
+                    )
+                );
+
+            return data &&
+                typeof data === 'object' &&
+                !Array.isArray(data)
+                ? data
+                : {};
+
+        } catch (error) {
+
+            return {};
+        }
+    }
+
+    const usageCounts =
+        loadUsageCounts();
+
+    function getTotalBotsUsed(userId) {
+
+        return Number(
+            usageCounts[String(userId)] || 0
+        );
+    }
+
+    function addBotUsage(userId, count) {
+
+        if (
+            !userId ||
+            count <= 0
+        ) {
+            return 0;
+        }
+
+        const key =
+            String(userId);
+
+        usageCounts[key] =
+            getTotalBotsUsed(key) +
+            count;
+
+        try {
+
+            const tempFile =
+                `${USAGE_FILE}.tmp`;
+
+            fs.writeFileSync(
+                tempFile,
+                JSON.stringify(
+                    usageCounts,
+                    null,
+                    2
+                ),
+                'utf8'
+            );
+
+            fs.renameSync(
+                tempFile,
+                USAGE_FILE
+            );
+
+        } catch (error) {
+
+            console.error(
+                `${RED}[Usage] Failed to save usage counts:${RESET}`,
+                error.message
+            );
+        }
+
+        return usageCounts[key];
+    }
+
+    // ============================================================
+    // DISCORD ACCESS VALIDATION
+    // ============================================================
+
+    async function validateDiscordAccessToken(token) {
+
+        if (
+            typeof token !== 'string' ||
+            token.length < 20 ||
+            token.length > 4096
+        ) {
+            return null;
+        }
+
+        const controller =
+            new AbortController();
+
+        const timeout =
+            setTimeout(
+                () => controller.abort(),
+                5000
+            );
+
+        try {
+
+            const response =
+                await fetch(
+                    AUTH_VALIDATE_URL,
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'Authorization':
+                                `Bearer ${token}`,
+
+                            'Accept':
+                                'application/json'
+                        },
+
+                        signal:
+                            controller.signal
+                    }
+                );
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const result =
+                await response.json();
+
+            return result.valid === true
+                ? result
+                : null;
+
+        } catch (error) {
+
+            console.error(
+                `${RED}[Auth] Validation failed:${RESET}`,
+                error.message
+            );
+
+            return null;
+
+        } finally {
+
+            clearTimeout(timeout);
+        }
     }
 
     // ============================================================
@@ -95,52 +345,61 @@
     let proxies = [];
 
     try {
+
         const proxyFile =
             fs.readFileSync(
                 'proxies.txt',
                 'utf8'
             );
 
-        proxies = proxyFile
-            .split(/\r?\n/)
-            .map(proxy => proxy.trim())
-            .filter(Boolean)
-            .map(proxy => {
+        proxies =
+            proxyFile
+                .split(/\r?\n/)
+                .map(
+                    proxy => proxy.trim()
+                )
+                .filter(Boolean)
+                .map(proxy => {
 
-                // Déjà au format URL
-                if (
-                    /^(http|https|socks4|socks5):\/\//i.test(proxy)
-                ) {
-                    return proxy;
-                }
+                    if (
+                        /^(http|https|socks4|socks5):\/\//i.test(proxy)
+                    ) {
+                        return proxy;
+                    }
 
-                const parts =
-                    proxy.split(':');
+                    const parts =
+                        proxy.split(':');
 
-                // IP:PORT:USER:PASS
-                if (parts.length === 4) {
-                    return (
-                        `http://${parts[2]}:${parts[3]}@` +
-                        `${parts[0]}:${parts[1]}`
-                    );
-                }
+                    if (
+                        parts.length === 4
+                    ) {
 
-                // IP:PORT
-                if (parts.length === 2) {
-                    return (
-                        `http://${parts[0]}:${parts[1]}`
-                    );
-                }
+                        return (
+                            `http://${parts[2]}:${parts[3]}@` +
+                            `${parts[0]}:${parts[1]}`
+                        );
+                    }
 
-                return null;
-            })
-            .filter(Boolean);
+                    if (
+                        parts.length === 2
+                    ) {
+
+                        return (
+                            `http://${parts[0]}:${parts[1]}`
+                        );
+                    }
+
+                    return null;
+
+                })
+                .filter(Boolean);
 
         console.log(
             `${GREEN}Successfully loaded ${proxies.length} proxies from proxies.txt${RESET}`
         );
 
     } catch (error) {
+
         console.error(
             `${RED}CRITICAL: Failed to read proxies.txt.${RESET}`,
             error.message
@@ -149,7 +408,10 @@
         process.exit(1);
     }
 
-    if (proxies.length === 0) {
+    if (
+        proxies.length === 0
+    ) {
+
         console.error(
             `${RED}CRITICAL: No proxies available.${RESET}`
         );
@@ -166,16 +428,14 @@
             (request, response) => {
 
                 response.writeHead(
-                    426,
+                    302,
                     {
-                        'Content-Type':
-                            'text/plain'
+                        Location:
+                            'https://discord.gg/hUtPRYBGt'
                     }
                 );
 
-                response.end(
-                    'Rayko Server'
-                );
+                response.end();
             }
         );
 
@@ -184,18 +444,12 @@
     // ============================================================
 
     function randomInt(min, max) {
+
         return Math.floor(
             Math.random() *
             (max - min + 1)
         ) + min;
     }
-
-    // ============================================================
-    // CLIENTS
-    // ============================================================
-
-    const clients =
-        new Map();
 
     // ============================================================
     // WEBSOCKET SERVER
@@ -216,65 +470,73 @@
         (socket, request) => {
 
             const remoteAddress =
-                request.socket.remoteAddress ||
-                'unknown';
+                request.socket.remoteAddress;
 
             console.log(
                 `${CYAN}${remoteAddress}${RESET} connected`
             );
 
             // ====================================================
-            // CREATE CLIENT
+            // IMPORTANT FIX
+            //
+            // Chaque connexion possède maintenant son propre
+            // objet "client".
+            //
+            // AVANT :
+            // clients.get(remoteAddress)
+            //
+            // Avec Caddy plusieurs utilisateurs pouvaient avoir
+            // la même remoteAddress (127.0.0.1), donc ils partageaient
+            // les mêmes workers.
+            //
+            // MAINTENANT :
+            // 1 WebSocket = 1 client = 1 groupe de workers.
             // ====================================================
 
-            if (
-                !clients.has(remoteAddress)
-            ) {
+            const client = {
 
-                clients.set(
-                    remoteAddress,
-                    {
-                        workers: [],
+                workers:
+                    [],
 
-                        botSlots:
-                            new Map(),
+                botSlots:
+                    new Map(),
 
-                        tank:
-                            DEFAULT_TANK,
+                botNames:
+                    new Map(),
 
-                        tanks: [],
+                lastRandomBotName:
+                    null,
 
-                        tankIdx:
-                            0,
+                tank:
+                    DEFAULT_TANK,
 
-                        proxyIdx:
-                            0,
+                tanks:
+                    [],
 
-                        accessLevel:
-                            DEMO_ACCESS,
+                tankIdx:
+                    0,
 
-                        botHash:
-                            null,
+                proxyIdx:
+                    0,
 
-                        botName:
-                            DEFAULT_NAME,
+                accessLevel:
+                    DEMO_ACCESS,
 
-                        targetBotCount:
-                            0,
+                botHash:
+                    null,
 
-                        // IMPORTANT :
-                        // Les bots continuent à respawn
-                        // même si le WebSocket disparaît.
-                        respawnEnabled:
-                            true
-                    }
-                );
-            }
+                botName:
+                    DEFAULT_NAME,
 
-            const client =
-                clients.get(
-                    remoteAddress
-                );
+                targetBotCount:
+                    0,
+
+                discordUserId:
+                    null,
+
+                respawnEnabled:
+                    true
+            };
 
             let challenge =
                 null;
@@ -292,20 +554,34 @@
                     socket.readyState ===
                     socket.OPEN
                 ) {
-                    socket.send(
-                        pack(data)
-                    );
+
+                    try {
+
+                        socket.send(
+                            pack(data)
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            `${RED}[WebSocket] Send error:${RESET}`,
+                            error.message
+                        );
+                    }
                 }
             }
 
             // ====================================================
-            // CLOSE CONNECTION
+            // CLOSE
             // ====================================================
 
             function closeConnection() {
+
                 try {
+
                     socket.close();
-                } catch {
+
+                } catch (error) {
                     // Ignore
                 }
             }
@@ -350,10 +626,6 @@
                         return false;
                     };
 
-                // ------------------------------------------------
-                // STDOUT
-                // ------------------------------------------------
-
                 if (worker.stdout) {
 
                     worker.stdout.on(
@@ -370,7 +642,9 @@
                                 const line of lines
                             ) {
 
-                                if (!line.trim()) {
+                                if (
+                                    !line.trim()
+                                ) {
                                     continue;
                                 }
 
@@ -388,10 +662,6 @@
                     );
                 }
 
-                // ------------------------------------------------
-                // STDERR
-                // ------------------------------------------------
-
                 if (worker.stderr) {
 
                     worker.stderr.on(
@@ -408,7 +678,9 @@
                                 const line of lines
                             ) {
 
-                                if (!line.trim()) {
+                                if (
+                                    !line.trim()
+                                ) {
                                     continue;
                                 }
 
@@ -439,6 +711,7 @@
                 while (
                     client.botSlots.has(slotId)
                 ) {
+
                     slotId++;
                 }
 
@@ -446,76 +719,68 @@
             }
 
             // ====================================================
-            // SCHEDULE RESPAWN
+            // RANDOM BOT NAME
             // ====================================================
 
-            function scheduleRespawn(
-                slotId,
-                hash,
-                botName
+            function getRandomBotName() {
+
+                let randomBotName;
+
+                do {
+
+                    randomBotName =
+                        RANDOM_BOT_NAMES[
+                            Math.floor(
+                                Math.random() *
+                                RANDOM_BOT_NAMES.length
+                            )
+                        ];
+
+                } while (
+                    randomBotName ===
+                    client.lastRandomBotName
+                );
+
+                client.lastRandomBotName =
+                    randomBotName;
+
+                return randomBotName;
+            }
+
+            // ====================================================
+            // FORMAT BOT NAME
+            // ====================================================
+
+            function formatBotName(
+                botName,
+                slotId
             ) {
 
-                if (
-                    !client.respawnEnabled
-                ) {
-                    return;
-                }
+                const botNumber =
+                    slotId + 1;
 
-                if (!hash) {
-                    console.log(
-                        `${RED}[Bot ${slotId + 1}] Cannot respawn: no hash.${RESET}`
+                const nameTemplate =
+                    String(
+                        botName ||
+                        DEFAULT_NAME
                     );
 
-                    return;
-                }
+                const randomBotName =
+                    /\[random\]/i.test(
+                        nameTemplate
+                    )
+                        ? getRandomBotName()
+                        : null;
 
-                if (
-                    client.botSlots.has(slotId)
-                ) {
-                    return;
-                }
-
-                console.log(
-                    `${YELLOW}[Bot ${slotId + 1}] Respawn scheduled in ${RESPAWN_DELAY}ms.${RESET}`
-                );
-
-                setTimeout(
-                    () => {
-
-                        // IMPORTANT :
-                        // Aucun test WebSocket ici.
-                        // Le bot peut respawn même si
-                        // Tampermonkey est déconnecté.
-
-                        if (
-                            !client.respawnEnabled
-                        ) {
-                            return;
-                        }
-
-                        if (!hash) {
-                            return;
-                        }
-
-                        if (
-                            client.botSlots.has(slotId)
-                        ) {
-                            return;
-                        }
-
-                        console.log(
-                            `${CYAN}[Bot ${slotId + 1}] Respawning...${RESET}`
-                        );
-
-                        spawnBotSlot(
-                            slotId,
-                            hash,
-                            botName
-                        );
-
-                    },
-                    RESPAWN_DELAY
-                );
+                return nameTemplate
+                    .replace(
+                        /\[random\]/gi,
+                        randomBotName
+                    )
+                    .replace(
+                        /\[count\]/gi,
+                        String(botNumber)
+                    );
             }
 
             // ====================================================
@@ -549,15 +814,29 @@
                     return;
                 }
 
-                // ------------------------------------------------
+                const resolvedBotName =
+                    client.botNames.get(slotId) ||
+                    formatBotName(
+                        botName,
+                        slotId
+                    );
+
+                client.botNames.set(
+                    slotId,
+                    resolvedBotName
+                );
+
+                // =================================================
                 // PROXY
-                // ------------------------------------------------
+                // =================================================
 
                 if (
                     client.proxyIdx >=
                     proxies.length
                 ) {
-                    client.proxyIdx = 0;
+
+                    client.proxyIdx =
+                        0;
                 }
 
                 const proxy =
@@ -570,9 +849,9 @@
 
                 let worker;
 
-                // ------------------------------------------------
+                // =================================================
                 // CREATE WORKER
-                // ------------------------------------------------
+                // =================================================
 
                 try {
 
@@ -613,9 +892,9 @@
                 const botNumber =
                     slotId + 1;
 
-                // ------------------------------------------------
+                // =================================================
                 // SAVE WORKER
-                // ------------------------------------------------
+                // =================================================
 
                 client.botSlots.set(
                     slotId,
@@ -640,8 +919,7 @@
                     error => {
 
                         console.error(
-                            `${RED}[Worker ${botNumber} ERROR]${RESET}`,
-                            error.message
+                            `${RED}[Worker ${botNumber} ERROR]${RESET} ${error.message}`
                         );
                     }
                 );
@@ -658,15 +936,12 @@
                             `${YELLOW}[Worker ${botNumber}] exited with code ${code}${RESET}`
                         );
 
-                        // Retirer le worker de la liste
                         client.workers =
                             client.workers.filter(
                                 item =>
                                     item !== worker
                             );
 
-                        // Retirer uniquement si ce worker
-                        // correspond toujours au slot.
                         if (
                             client.botSlots.get(
                                 slotId
@@ -677,10 +952,6 @@
                                 slotId
                             );
                         }
-
-                        // ------------------------------------------------
-                        // STOP MANUEL
-                        // ------------------------------------------------
 
                         if (
                             !client.respawnEnabled
@@ -693,30 +964,16 @@
                             return;
                         }
 
-                        // ------------------------------------------------
-                        // AUTO RESPAWN
-                        // ------------------------------------------------
-
-                        // IMPORTANT :
-                        // On NE vérifie PAS :
-                        //
-                        // authenticated
-                        // socket.readyState
-                        //
-                        // Le serveur respawn donc le bot même
-                        // après déconnexion du client.
-
-                        if (!client.botHash) {
-
-                            console.log(
-                                `${RED}[Bot ${botNumber}] Cannot respawn: client botHash is missing.${RESET}`
-                            );
-
+                        if (
+                            !authenticated ||
+                            socket.readyState !==
+                            socket.OPEN
+                        ) {
                             return;
                         }
 
                         console.log(
-                            `${RED}[Bot ${botNumber}] DISCONNECTED / EXITED${RESET}`
+                            `${RED}[Bot ${botNumber}] DISCONNECTED${RESET}`
                         );
 
                         console.log(
@@ -765,7 +1022,9 @@
                         client.tankIdx >=
                         client.tanks.length
                     ) {
-                        client.tankIdx = 0;
+
+                        client.tankIdx =
+                            0;
                     }
                 }
 
@@ -808,7 +1067,9 @@
                                 proxy:
                                 {
                                     type:
-                                        'http',
+                                        proxy.startsWith('socks')
+                                            ? 'socks'
+                                            : 'http',
 
                                     url:
                                         proxy
@@ -818,7 +1079,7 @@
                                     `#${hash}`,
 
                                 name:
-                                    botName,
+                                    resolvedBotName,
 
                                 stats:
                                 [
@@ -878,7 +1139,73 @@
             }
 
             // ====================================================
-            // SPAWN MULTIPLE BOTS
+            // RESPAWN
+            // ====================================================
+
+            function scheduleRespawn(
+                slotId,
+                hash,
+                botName
+            ) {
+
+                if (
+                    !client.respawnEnabled
+                ) {
+                    return;
+                }
+
+                if (!hash) {
+                    return;
+                }
+
+                if (
+                    client.botSlots.has(slotId)
+                ) {
+                    return;
+                }
+
+                setTimeout(
+                    () => {
+
+                        if (
+                            !client.respawnEnabled
+                        ) {
+                            return;
+                        }
+
+                        if (
+                            !authenticated ||
+                            socket.readyState !==
+                            socket.OPEN
+                        ) {
+                            return;
+                        }
+
+                        if (
+                            client.botSlots.has(
+                                slotId
+                            )
+                        ) {
+                            return;
+                        }
+
+                        console.log(
+                            `${CYAN}[Bot ${slotId + 1}] Respawning...${RESET}`
+                        );
+
+                        spawnBotSlot(
+                            slotId,
+                            hash,
+                            botName
+                        );
+
+                    },
+                    RESPAWN_DELAY
+                );
+            }
+
+            // ====================================================
+            // SPAWN MULTIPLE
             // ====================================================
 
             function spawnAdditionalBots(
@@ -931,10 +1258,13 @@
                                 return;
                             }
 
-                            // IMPORTANT :
-                            // Plus de vérification du WebSocket ici.
-                            // Le spawn initial peut terminer même si
-                            // le client se déconnecte entre-temps.
+                            if (
+                                !authenticated ||
+                                socket.readyState !==
+                                socket.OPEN
+                            ) {
+                                return;
+                            }
 
                             if (
                                 client.botSlots.has(
@@ -1020,7 +1350,7 @@
                                 const receivedChallenge =
                                     data[0];
 
-                                const receivedCode =
+                                const receivedToken =
                                     data[1];
 
                                 if (
@@ -1037,58 +1367,69 @@
                                     break;
                                 }
 
-                                if (
-                                    receivedCode ===
-                                    decodeBase64(
-                                        ADMIN_CODE_B64
+                                validateDiscordAccessToken(
+                                    receivedToken
+                                )
+                                    .then(
+                                        authResult => {
+
+                                            if (!authResult) {
+
+                                                send(
+                                                    'AUTH',
+                                                    'rejected'
+                                                );
+
+                                                closeConnection();
+
+                                                console.log(
+                                                    `${RED}${remoteAddress}${RESET} rejected: Discord role validation failed`
+                                                );
+
+                                                return;
+                                            }
+
+                                            authenticated =
+                                                true;
+
+                                            client.accessLevel =
+                                                ROLE_ACCESS;
+
+                                            client.discordUserId =
+                                                authResult.user_id;
+
+                                            const totalBotsUsed =
+                                                getTotalBotsUsed(
+                                                    authResult.user_id
+                                                );
+
+                                            send(
+                                                'AUTH',
+                                                ROLE_ACCESS,
+                                                totalBotsUsed
+                                            );
+
+                                            console.log(
+                                                `${GREEN}${remoteAddress}${RESET} verified with Discord role (${authResult.user_id})`
+                                            );
+                                        }
                                     )
-                                ) {
+                                    .catch(
+                                        error => {
 
-                                    authenticated =
-                                        true;
+                                            console.error(
+                                                `${RED}[Auth] Unexpected validation error:${RESET}`,
+                                                error.message
+                                            );
 
-                                    client.accessLevel =
-                                        ADMIN_ACCESS;
+                                            send(
+                                                'AUTH',
+                                                'rejected'
+                                            );
 
-                                    send(
-                                        'AUTH',
-                                        ADMIN_ACCESS
+                                            closeConnection();
+                                        }
                                     );
-
-                                    console.log(
-                                        `${GREEN}${remoteAddress}${RESET} verified with FULL access [Admin]`
-                                    );
-
-                                } else if (
-                                    receivedCode ===
-                                    decodeBase64(
-                                        DEMO_CODE_B64
-                                    )
-                                ) {
-
-                                    authenticated =
-                                        true;
-
-                                    client.accessLevel =
-                                        DEMO_ACCESS;
-
-                                    send(
-                                        'AUTH',
-                                        DEMO_ACCESS
-                                    );
-
-                                    console.log(
-                                        `${YELLOW}${remoteAddress}${RESET} verified with DEMO access [FreeAccess]`
-                                    );
-
-                                } else {
-
-                                    closeConnection();
-
-                                    console.log(
-                                        `${RED}${remoteAddress}${RESET} rejected: invalid secret code`
-                                    );
-                                }
 
                                 break;
                             }
@@ -1108,61 +1449,63 @@
                                 client.tank =
                                     data[0];
 
-                                if (
-                                    Array.isArray(
-                                        client.tank
-                                    )
-                                ) {
+if (
+    Array.isArray(
+        client.tank
+    )
+) {
 
-                                    client.tanks =
-                                        client.tank;
+    client.tanks =
+        client.tank;
 
-                                    client.tankIdx =
-                                        0;
+    client.tankIdx =
+        0;
 
-                                    if (
-                                        client.tanks.length === 0
-                                    ) {
-                                        break;
-                                    }
+    if (
+        client.tanks.length === 0
+    ) {
+        break;
+    }
 
-                                    for (
-                                        const worker
-                                        of client.workers
-                                    ) {
+    for (
+        const worker
+        of client.workers
+    ) {
 
-                                        const tank =
-                                            client.tanks[
-                                                client.tankIdx
-                                            ];
+        const tank =
+            client.tanks[
+                client.tankIdx
+            ];
 
-                                        try {
+        try {
 
-                                            worker.postMessage(
-                                                {
-                                                    type:
-                                                        'tankselect',
+            worker.postMessage(
+                {
+                    type:
+                        'tankselect',
 
-                                                    tank:
-                                                        tank
-                                                }
-                                            );
+                    tank:
+                        tank
+                }
+            );
 
-                                        } catch (error) {
+        } catch (error) {
 
-                                            console.error(
-                                                `${RED}[Server] Tank error:${RESET}`,
-                                                error.message
-                                            );
-                                        }
+            console.error(
+                `${RED}[Server] Tank error:${RESET}`,
+                error.message
+            );
+        }
 
-                                        client.tankIdx++;
+        client.tankIdx++;
 
                                         if (
                                             client.tankIdx >=
                                             client.tanks.length
                                         ) {
-                                            client.tankIdx = 0;
+
+                                            client.tankIdx =
+                                                0;
                                         }
                                     }
 
@@ -1202,7 +1545,7 @@
                             }
 
                             // ====================================
-                            // SPAWN / ADD BOTS
+                            // SPAWN
                             // ====================================
 
                             case 'F': {
@@ -1230,13 +1573,17 @@
                                     client.accessLevel ===
                                     DEMO_ACCESS
                                 ) {
-                                    botCount = 1;
+
+                                    botCount =
+                                        1;
                                 }
 
                                 if (
                                     botCount < 1
                                 ) {
-                                    botCount = 1;
+
+                                    botCount =
+                                        1;
                                 }
 
                                 client.botHash =
@@ -1274,6 +1621,17 @@
                                     botName
                                 );
 
+                                const totalBotsUsed =
+                                    addBotUsage(
+                                        client.discordUserId,
+                                        botCount
+                                    );
+
+                                send(
+                                    'USAGE',
+                                    totalBotsUsed
+                                );
+
                                 break;
                             }
 
@@ -1295,9 +1653,6 @@
                                     `${RED}[Server] Destroying ${client.botSlots.size} bots...${RESET}`
                                 );
 
-                                // IMPORTANT :
-                                // Désactive le respawn AVANT
-                                // de demander aux workers de sortir.
                                 client.respawnEnabled =
                                     false;
 
@@ -1332,6 +1687,11 @@
                                 }
 
                                 client.botSlots.clear();
+
+                                client.botNames.clear();
+
+                                client.lastRandomBotName =
+                                    null;
 
                                 client.workers =
                                     [];
@@ -1375,6 +1735,12 @@
                                 setImmediate(
                                     () => {
 
+                                        // =================================================
+                                        // IMPORTANT :
+                                        // client.workers appartient UNIQUEMENT à cette
+                                        // connexion WebSocket.
+                                        // =================================================
+
                                         for (
                                             const worker
                                             of client.workers
@@ -1408,6 +1774,9 @@
                                                         mouse:
                                                             data[6],
 
+                                                        followMouse:
+                                                            data[6],
+
                                                         feeding:
                                                             data[7],
 
@@ -1420,17 +1789,20 @@
                                                         autospin:
                                                             data[10],
 
-                                                        manualMode:
+                                                        override:
                                                             data[11],
 
-                                                        manualX:
+                                                        manualMode:
                                                             data[12],
 
-                                                        manualY:
+                                                        manualX:
                                                             data[13],
 
+                                                        manualY:
+                                                            data[14],
+
                                                         shieldOffset:
-                                                            data[14]
+                                                            data[15]
                                                     }
                                                 );
 
@@ -1457,7 +1829,7 @@
                                 if (
                                     !authenticated ||
                                     client.accessLevel !==
-                                    ADMIN_ACCESS
+                                    ROLE_ACCESS
                                 ) {
                                     break;
                                 }
@@ -1495,7 +1867,7 @@
                             }
 
                             // ====================================
-                            // UNKNOWN COMMAND
+                            // UNKNOWN
                             // ====================================
 
                             default: {
@@ -1532,17 +1904,18 @@
                         `${YELLOW}${remoteAddress}${RESET} disconnected`
                     );
 
-                    // IMPORTANT :
-                    // NE PAS désactiver respawnEnabled ici.
-                    // NE PAS supprimer les workers.
-                    // Les bots restent indépendants du client.
+                    // =================================================
+                    // Les bots de CETTE connexion restent actifs.
+                    //
+                    // Ils appartiennent à "client", qui est local
+                    // à cette connexion.
+                    //
+                    // Une nouvelle connexion aura un nouvel objet
+                    // client et ne récupérera PAS ces workers.
+                    // =================================================
 
                     console.log(
                         `${CYAN}[Server] Client disconnected, bots kept alive.${RESET}`
-                    );
-
-                    console.log(
-                        `${GRAY}[Server] Automatic respawn remains ENABLED.${RESET}`
                     );
                 }
             );
@@ -1570,7 +1943,6 @@
 
     httpServer.listen(
         PORT,
-        HOST,
         () => {
 
             console.log();
@@ -1590,11 +1962,11 @@
             console.log();
 
             console.log(
-                `${GREEN}Server listening on ${HOST}:${PORT}${RESET}`
+                `${GREEN}Server listening on port ${PORT}${RESET}`
             );
 
             console.log(
-                `${GRAY}Environment PORT: ${process.env.PORT || 'not set (using 8082)'}${RESET}`
+                `${GRAY}Auth validation URL: ${AUTH_VALIDATE_URL}${RESET}`
             );
 
             console.log(
@@ -1613,12 +1985,8 @@
                 `${GRAY}Respawn delay: ${RESPAWN_DELAY} ms${RESET}`
             );
 
-            console.log(
-                `${CYAN}Automatic respawn after client disconnect: ENABLED${RESET}`
-            );
-
             console.log();
-
         }
     );
+
 })();

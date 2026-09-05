@@ -79,6 +79,7 @@
     rMouseDown: false,
     autofire: false,
     autospin: false,
+    override: false,
     manualMode: false,
     manualX: 0,
     manualY: 0,
@@ -89,6 +90,7 @@
 
   let lastAutofire = false;
   let lastAutospin = false;
+  let lastOverride = false;
   let destroyed = false;
   let mainInterval = null;
 
@@ -935,7 +937,7 @@ const builds = {
     let lastStatus = 0, statusData = '';
     const getStatus = function (f, s) {
       let now = global.performance.now();
-      if (statusData && now - lastStatus < 60000) {
+      if (statusData && now - lastStatus < 15000) {
         return {
           then: function () {
             return {
@@ -1038,12 +1040,12 @@ const builds = {
       // Détection si le bot s'appelle "zombie" (insensible à la casse, ex: zombie 1, ZombieX, etc.)
       const isZombie = config.name && /zombie/i.test(config.name);
       const zombiePhrases = [
-              "...",
-              "uuh",
-              "ghhhh",
-              "argh",
-              "uh..."
-            ];
+        "Braiiiiins...",
+        "Must consume brains...",
+        "Uuuugh...",
+        "Fresh meat...",
+        "Grrr... brains..."
+      ];
 
       const internalBotInterface = {
         log: log,
@@ -1479,14 +1481,14 @@ const builds = {
         }
       }
 
-// === MODIFICATION : GESTION DE LA VITESSE DE MOUVEMENT RÉDUITE ===
+      // === MODIFICATION : GESTION DE LA VITESSE DE MOUVEMENT RÉDUITE ===
       let lastMoveState = { W: false, A: false, S: false, D: false };
       let moveTickCounter = 0;
 
       function pathfind(x, y) {
         moveTickCounter++;
-        const modValue = isZombie ? 10 : 1;
-        if (moveTickCounter % modValue !== 0) return;
+        // On n'actualise les inputs de mouvement qu'une fois sur 2 pour ralentir la réactivité / vitesse ressentie
+        if (moveTickCounter % 1 !== 0) return; // Vitesse , change le chiffre apres Counter pour ralentir plus c haut plus c lent 
 
         const angle = getDir(position[0], position[1], x, y);
         let hold = {};
@@ -1591,6 +1593,11 @@ const builds = {
           controller.press("KeyC");
         }
         lastAutospin = target.autospin;
+
+        if (target.override) {
+          controller.press("KeyR");
+        }
+        lastOverride = target.override;
 
         block = false; 
         isUpgrading = false;
@@ -1712,7 +1719,11 @@ const builds = {
                   moveTarget.y = aimTarget.y;
                 }
 
-                if (target.forceFollowPlayer) {
+                // Follow Mouse must take priority over the optional
+                // force-follow-player mode. Previously this block always
+                // overwrote the mouse target, so the controller checkbox
+                // appeared to do nothing.
+                if (target.forceFollowPlayer && !target.followMouse) {
                   let angle = Math.atan2(target.mouseY, target.mouseX);
                   let offset = (target.shieldOffset || 0) * 80; 
                   moveTarget.x = target.x + (Math.cos(angle) * offset);
@@ -1747,6 +1758,10 @@ const builds = {
             if (target.autospin !== lastAutospin) {
               controller.press("KeyC");
               lastAutospin = target.autospin;
+            }
+            if (target.override !== lastOverride) {
+              controller.press("KeyR");
+              lastOverride = target.override;
             }
 
             if (!isZombie && target.chatSpam && Date.now() - lastChatAt > 3000) {
@@ -1999,7 +2014,7 @@ const builds = {
       });
     } else if (message.type === 'pause') {
       isPaused = message.paused;
-    } else if (message.type === 'key_command') {
+} else if (message.type === 'key_command') {
       const key = message.key;
       if (key === 'KeyX') {
         target.forceFollowPlayer = !target.forceFollowPlayer;
@@ -2014,6 +2029,7 @@ const builds = {
         }
         return; 
       }
+      // ============================
       if (currentBotInterface.simulateKey) {
         currentBotInterface.simulateKey(key);
       }
@@ -2024,11 +2040,16 @@ const builds = {
       target.mouseY = message.mouseY;
       target.mouseDown = message.mouseDown;
       target.rMouseDown = message.rMouseDown;
-      target.followMouse = message.mouse;
+      // Accept the explicit field from the updated server while keeping
+      // compatibility with the original "mouse" field.
+      target.followMouse = message.followMouse !== undefined
+        ? message.followMouse
+        : message.mouse;
       target.feed = message.feeding;
       target.shift = message.shift;
       target.autofire = message.autofire;
       target.autospin = message.autospin;
+      target.override = message.override;
       target.manualMode = message.manualMode;
       target.manualX = message.manualX;
       target.manualY = message.manualY;
