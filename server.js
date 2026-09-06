@@ -419,25 +419,105 @@
         process.exit(1);
     }
 
-    // ============================================================
-    // HTTP SERVER
-    // ============================================================
+// ============================================================
+// HTTP SERVER
+// ============================================================
 
-    const httpServer =
-        http.createServer(
-            (request, response) => {
+function proxyAuthRequest(request, response) {
+    const target = new URL(
+        `http://127.0.0.1:8080${request.url}`
+    );
 
+    const headers = {
+        ...request.headers,
+        host: '127.0.0.1:8080'
+    };
+
+    const proxyRequest = http.request(
+        {
+            hostname: '127.0.0.1',
+            port: 8080,
+            path: target.pathname + target.search,
+            method: request.method,
+            headers
+        },
+        proxyResponse => {
+            response.writeHead(
+                proxyResponse.statusCode || 502,
+                proxyResponse.headers
+            );
+
+            proxyResponse.pipe(response);
+        }
+    );
+
+    proxyRequest.on(
+        'error',
+        error => {
+            console.error(
+                `${RED}[Auth Proxy] ${RESET}${error.message}`
+            );
+
+            if (!response.headersSent) {
                 response.writeHead(
-                    302,
+                    502,
                     {
-                        Location:
-                            'https://discord.gg/hUtPRYBGt'
+                        'Content-Type':
+                            'text/plain; charset=utf-8'
                     }
                 );
+            }
 
-                response.end();
+            response.end(
+                'Auth service unavailable'
+            );
+        }
+    );
+
+    request.pipe(proxyRequest);
+}
+
+const publicAuthPaths = new Set([
+    '/auth/discord/start',
+    '/auth/discord/callback',
+    '/auth/poll',
+    '/auth/health'
+]);
+
+const httpServer = http.createServer(
+    (request, response) => {
+
+        const pathname = new URL(
+            request.url,
+            `http://${request.headers.host || 'localhost'}`
+        ).pathname;
+
+        // ====================================================
+        // AUTH -> PYTHON :8080
+        // ====================================================
+
+        if (publicAuthPaths.has(pathname)) {
+            return proxyAuthRequest(
+                request,
+                response
+            );
+        }
+
+        // ====================================================
+        // EVERYTHING ELSE
+        // ====================================================
+
+        response.writeHead(
+            302,
+            {
+                Location:
+                    'https://discord.gg/hUtPRYBGt'
             }
         );
+
+        response.end();
+    }
+);
 
     // ============================================================
     // RANDOM
