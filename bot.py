@@ -50,7 +50,7 @@ DISCORD_CLIENT_SECRET = os.getenv(
 
 DISCORD_REDIRECT_URI = os.getenv(
     "DISCORD_REDIRECT_URI",
-    "https://raykoserver.duckdns.org/auth/discord/callback"
+    "https://vigilant-potato-66x7v4p4x66c5p64-8082.app.github.dev/auth/discord/callback"
 )
 
 DISCORD_REQUIRED_ROLE_ID = os.getenv(
@@ -77,7 +77,7 @@ AUTH_PORT = int(
 
 AUTH_PUBLIC_BASE_URL = os.getenv(
     "AUTH_PUBLIC_BASE_URL",
-    "https://raykoserver.duckdns.org"
+    "https://vigilant-potato-66x7v4p4x66c5p64-8082.app.github.dev/auth/discord/callback"
 ).rstrip("/")
 
 AUTH_SESSION_TTL = 3600
