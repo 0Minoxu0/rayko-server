@@ -77,7 +77,7 @@ AUTH_PORT = int(
 
 AUTH_PUBLIC_BASE_URL = os.getenv(
     "AUTH_PUBLIC_BASE_URL",
-    "https://vigilant-potato-66x7v4p4x66c5p64-8082.app.github.dev/auth/discord/callback"
+    "https://vigilant-potato-66x7v4p4x66c5p64-8082.app.github.dev"
 ).rstrip("/")
 
 AUTH_SESSION_TTL = 3600
