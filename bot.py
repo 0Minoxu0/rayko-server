@@ -86,10 +86,20 @@ AUTH_PENDING_TTL = 3600
 
 USAGE_REPORT_CHANNEL_ID = 1544716859608269011
 
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.abspath(__file__)
-    )
+# ============================================================
+# FILES LOCATED NEXT TO bot.py
+# ============================================================
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+USAGE_REPORTED_USERS_FILE = os.path.join(
+    BASE_DIR,
+    "usage_reported_users.json"
+)
+
+USAGE_COUNTS_FILE = os.path.join(
+    BASE_DIR,
+    "usage_counts.json"
 )
 
 USAGE_REPORTED_USERS_FILE = os.path.join(
