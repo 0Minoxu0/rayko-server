@@ -10,7 +10,6 @@
   let autoStartCount = 0;
   let autoStartMode = false;
 
-  // ===== CHECK FOR COMMAND LINE ARGUMENTS =====
   const args = process.argv.slice(2);
 
   for (let i = 0; i < args.length; i++) {
@@ -21,7 +20,6 @@
     }
   }
 
-  // Force exit on any uncaught issue
   const forceKill = (reason) => {
     console.error(`FORCED EXIT: ${reason}`);
     const max = setTimeout(() => {}, 0);
@@ -84,7 +82,8 @@
     manualX: 0,
     manualY: 0,
     chatSpam: "",
-    forceFollowPlayer: true
+    forceFollowPlayer: true,
+    customBuild: "0/0/3/9/9/9/9/3"
   };
   let lastChatAt = 0;
 
@@ -94,7 +93,7 @@
   let destroyed = false;
   let mainInterval = null;
 
-const builds = {
+  const builds = {
     basic: "0/0/3/9/9/9/9/3",
     triangle: "0/2/3/7/7/7/7/7",
     smasher: "12/12/0/0/0/0/3/12/2/1"
@@ -108,814 +107,196 @@ const builds = {
   };
 
   const tanks = {
-    basic: {
-      path: "",
-      build: ""
-    },
-
-    // OTHER
-    pursuer: {
-      path: "uyiy",
-      build: "0/0/0/0/0/0/0/9/0/0"
-    },
-    anni: {
-      path: "kyu",
-      build: builds.basic
-    },
-    shotgun: {
-      path: "kj",
-      build: builds.basic
-    },
-    penta: {
-      path: "yuy",
-      build: builds.basic
-    },
-    spread: {
-      path: "yuu",
-      build: builds.basic
-    },
-    octo: {
-      path: "hyyc",
-      build: "3/3/0/7/8/7/9/3/1/1"
-    },
-    autogunner: {
-      path: "iiy",
-      build: builds.basic
-    },
-    triplet: {
-      path: "yuj",
-      build: builds.basic
-    },
-    predator: {
-      path: "uuy",
-      build: builds.basic
-    },
-    triplex: {
-      path: "yjy",
-      build: builds.basic
-    },
-    quadruplex: {
-      path: "yju",
-      build: builds.basic
-    },
-    machinegunner: {
-      path: "iih",
-      build: builds.basic
-    },
-    beekeeper: {
-      path: "iyi",
-      build: builds.basic
-    },
-    atomizer: {
-      path:"ihi",
-      build: builds.basic
-    },
-    focal: {
-      path:"ihh",
-      build: builds.basic
-    },
-    cyclone: {
-      path: "hyuc",
-      build: builds.basic
-    },
-    dust_storm: {
-      path: "hyuuc",
-      build: builds.basic
-    },
-    autosmasher: {
-      path: ["r", [3, 3], "i"],
-      build: builds.basic
-    },
-    septatrap: {
-      path: "hjic",
-      build: "0/6/0/9/9/9/9"
-    },
-
-    // ANNIES
-    obliterator: {
-      path: "vkyuy",
-      build: builds.basic
-    },
-    compound: {
-      path: "kyui",
-      build: builds.basic
-    },
-    wiper: {
-      path: "kyuj",
-      build: builds.basic
-    },
-    stomper: {
-      path: ["k", "y", "u", [1, 3]],
-      build: builds.basic
-    },
-    autoanni: {
-      path: ["k", "y", "u", [2, 3]],
-      build: builds.basic
-    },
-    shaver: {
-      path: ["k", "y", "u", [2, 4]],
-      build: builds.basic
-    },
-    eradicator: {
-      path: ["k", "y", "u", [1, 4]],
-      build: builds.basic
-    },
-
-    // FOR CRASH
-    whirlwind: {
-      path: "chyuk",
-      build: "9/9/0/0/0/0/9"
-    },
-    tempest: {
-      path: "chyuh",
-      build: "9/9/0/0/0/0/9"
-    },
-    septamech: {
-      path: "chjkh",
-      build: "9/9/0/0/0/0/9"
-    },
-    doubleequalizer: {
-      path: "yjyk",
-      build: "9/9/0/0/0/0/9"
-    },
-    rigger: {
-      path: "yjkk",
-      build: "9/9/0/0/0/0/9"
-    },
-    doublespread: {
-      path: "yuuy",
-      build: "9/9/0/0/0/0/9"
-    },
-    palisade: {
-      path: ["h", "j", "y", [3, 3]],
-      build: "9/9/0/0/0/0/9"
-    },
-
-    // SMASHERS
-    megasmasher: {
-      path: ["r", [3, 3], "y"],
-      build: builds.smasher
-    },
-    spike: {
-      path: ["r", [3, 3], "u"],
-      build: builds.basic
-    },
-    autoshasher: {
-      path: ["r", [3, 3], "i"],
-      build: builds.basic
-    },
-    landmine: {
-      path: ["r", [3, 3], "h"],
-      build: builds.basic
-    },
-
-    thorn: {
-      path: ["r", [2, 3], "u", "y"],
-      build: builds.basic
-    },
-    megaspike: {
-      path: ["r", [2, 3], "u", "u"],
-      build: builds.basic
-    },
-    claymore: {
-      path: ["r", [2, 3], "u", "i"],
-      build: builds.basic
-    },
-    spear: {
-      path: ["r", [2, 3], "u", "j"],
-      build: builds.basic
-    },
-    prick: {
-      path: ["r", [2, 3], "u", "k"],
-      build: builds.basic
-    },
-
-    slammer: {
-      path: [[2, 3], "k", "y"],
-      build: "8/10/12/0/0/0/0/12"
-    },
-    basher: {
-      path: [[2, 3], "j", "j"],
-      build: "8/10/12/0/0/0/0/12"
-    },
-    physician: {
-      path: [[2, 3], [3, 3]],
-      build: "0/12/0/0/0/0/12/12/3/3"
-    },
-
-    // DPS
-    toppler: {
-      path: "uijh",
-      build: builds.basic
-    },
-    crack: {
-      path: "yuyj",
-      build: builds.basic
-    },
-    autooperator: {
-      path: [[1, 3], "j", "j", [2, 3]],
-      build: builds.basic
-    },
-    lorry: {
-      path: "ihyy",
-      build: "3/3/0/7/8/7/9/3/1/1"
-    },
-
-    // BUILDERS
-    engineer: {
-      path: "kui",
-      build: builds.basic
-    },
-    assembler: {
-      path: "kuj",
-      build: builds.basic
-    },
-    architect: {
-      path: "kuk",
-      build: builds.basic
-    },
-
-    // AUTO
-    auto5: {
-      path: "hiy",
-      build: builds.basic
-    },
-    mega3: {
-      path: "hiu",
-      build: builds.basic
-    },
-    auto6: {
-      path: "hiiy",
-      build: builds.basic
-    },
-
-    auto7: {
-      path: "hiyy",
-      build: builds.basic
-    },
-    mega5: {
-      path: "hiyu",
-      build: builds.basic
-    },
-    autoauto4: {
-      path: "hiii",
-      build: builds.basic
-    },
-    hurler3: {
-      path: "hiui",
-      build: builds.basic
-    },
-    batter4: {
-      path: "hiiu",
-      build: builds.basic
-    },
-
-    // LAUNCHERS
-    skimmer: {
-      path: "khy",
-      build: builds.basic
-    },
-    twister: {
-      path: "khu",
-      build: builds.basic
-    },
-    swarmer: {
-      path: "khi",
-      build: builds.basic
-    },
-    sidewinder: {
-      path: "khh",
-      build: builds.basic
-    },
-    fieldgun: {
-      path: "khj",
-      build: builds.basic
-    },
-
-    // AR LAUNCHERS
-    spinner: {
-      path: "khju",
-      build: builds.basic
-    },
-    helix_ar: {
-      path: "khuh",
-      build: builds.basic
-    },
-    hypertwister: {
-      path: "khui",
-      build: builds.basic
-    },
-    gyro: {
-      path: "khuk",
-      build: builds.basic
-    },
-    coli: {
-      path: ["k", "h", "u", [3, 3]],
-      build: builds.basic
-    },
-
-    hyperskimmer: {
-      path: "khyi",
-      build: builds.basic
-    },
-    skidder: {
-      path: "khjy",
-      build: builds.basic
-    },
-    ream: {
-      path: "khyh",
-      build: builds.basic
-    },
-
-    hyperswarmer: {
-      path: "khih",
-      build: builds.basic
-    },
-    molotov: {
-      path: "khij",
-      build: builds.basic
-    },
-
-    firework: {
-      path: "khky",
-      build: builds.basic
-    },
-    levi: {
-      path: "khkh",
-      build: builds.basic
-    },
-
-    hypercluster: {
-      path: ["k", "h", [4, 2], "h"],
-      build: builds.basic
-    },
-    neutron: {
-      path: ["k", "h", [4, 2], [1, 4]],
-      build: builds.basic
-    },
-
-    // DRONES
-    overczar: {
-      path: "jyyy",
-      build: builds.basic
-    },
-    infestor: {
-      path: "jii",
-      build: "0/0/3/9/9/9/9/3"
-    },
-    tyrant: {
-      path: "jyyk",
-      build: builds.basic
-    },
-    autooverlord: {
-      path: "jyyj",
-      build: builds.basic
-    },
-    megaautooverseer: {
-      path: "jyiy",
-      build: builds.basic
-    },
-    tripleautooverseer: {
-      path: "jyiu",
-      build: builds.basic
-    },
-    tripleautopen: {
-      path: "jyiu",
-      build: builds.basic
-    },
-    autooverdrive: {
-      path: "jyhh",
-      build: builds.basic
-    },
-    headman: {
-      path: "jkyy",
-      build: builds.basic
-    },
-    overcheese: {
-      path: "jkyu",
-      build: builds.basic
-    },
-    overstorm: {
-      path: "jjyu",
-      build: builds.basic
-    },
-
-    // NECRO
-    diviner: {
-      path: "jiyy",
-      build: builds.basic
-    },
-    autonecro: {
-      path: "jiyi",
-      build: builds.basic
-    },
-    necrodrive: {
-      path: "jiyh",
-      build: builds.basic
-    },
-    megaautounderdrive: {
-      path: "jiiy",
-      build: builds.basic
-    },
-    tripleautounderdrive: {
-      path: "jiiu",
-      build: builds.basic
-    },
-
-    pentamancer: {
-      path: "jiky",
-      build: builds.basic
-    },
-    pentadrive: {
-      path: "jikh",
-      build: builds.basic
-    },
-    warlock: {
-      path: "jikj",
-      build: builds.basic
-    },
-    autopentaseer: {
-      path: "jiki",
-      build: builds.basic
-    },
-
-    // CARRIER
-    warship: {
-      path: "juuy",
-      build: builds.basic
-    },
-    battlerdrive: {
-      path: "jjiu",
-      build: builds.basic
-    },
-    bismarck: {
-      path: "juku",
-      build: builds.basic
-    },
-    proddrive: {
-      path: "jjjj",
-      build: builds.basic
-    },
-    manufacture: {
-      path: "jukj",
-      build: builds.basic
-    },
-    dirigible: {
-      path: "jukk",
-      build: builds.basic
-    },
-    autobattleship: {
-      path: "juhh",
-      build: builds.basic
-    },
-    autoprod: {
-      path: "juki",
-      build: builds.basic
-    },
-    autocruiserdrive: {
-      path: "jjih",
-      build: builds.basic
-    },
-
-
-    // TRI ANGLE
-    rocket: {
-      path: "huuy",
-      build: "8/8/0/0/0/0/8/8/2/8"
-    },
-    fighter: {
-      path: "huy",
-      build: builds.triangle
-    },
-    bomber: {
-      path: "huh",
-      build: builds.triangle
-    },
-    autotriangle: {
-      path: "huj",
-      build: builds.triangle
-    },
-    surfer: {
-      path: "huk",
-      build: builds.triangle
-    },
-    eagle: {
-      path: "kk",
-      build: builds.triangle
-    },
-    phoenix: {
-      path: "ihu",
-      build: builds.triangle
-    },
-    vulture: {
-      path: "uij",
-      build: builds.triangle
-    },
-
-    // ARMS RACE TRI ANGLE
-    // surfer
-    browser: {
-      path: "huky",
-      build: builds.triangle
-    },
-    surferdrive: {
-      path: "huki",
-      build: builds.triangle
-    },
-    roller: {
-      path: "hukh",
-      build: builds.triangle
-    },
-    strider: {
-      path: "hukk",
-      build: builds.triangle
-    },
-
-    // auto tri angle
-    megaautotriangle: {
-      path: "hujy",
-      build: builds.triangle
-    },
-    tripleautotriangle: {
-      path: "huju",
-      build: builds.triangle
-    },
-    autofighter: {
-      path: "huji",
-      build: builds.triangle
-    },
-    autobomber: {
-      path: "hujk",
-      build: builds.triangle
-    },
-
-    // taser
-    kicker: {
-      path: "uikj",
-      build: builds.triangle
-    },
-    electrocutor: {
-      path: "uiki",
-      build: builds.triangle
-    },
-
-    // eagle
-    autoeagle: {
-      path: "kkk",
-      build: builds.triangle
-    },
-    griffin: {
-      path: "kkh",
-      build: builds.triangle
-    },
-    autoassassin: {
-      path: "uyh",
-      build: builds.basic
-    },
-    single: {
-      path: "uyj",
-      build:builds.basic
-    },
-
-    // BASIC & TREE TANKS
-    twin: {
-      path: "y",
-      build: builds.basic
-    },
-    doubletwin: {
-      path: "yy",
-      build: builds.basic
-    },
-    tripleshot: {
-      path: "yu",
-      build: builds.basic
-    },
-    sniper: {
-      path: "u",
-      build: builds.basic
-    },
-    ranger: {
-      path: "uyy",
-      build: builds.basic
-    },
-    machinegun: {
-      path: "i",
-      build: builds.basic
-    },
-    sprayer: {
-      path: "ih",
-      build: builds.basic
-    },
-    redistributor: {
-      path: "ihy",
-      build: builds.basic
-    },
-    flankguard: {
-      path: "h",
-      build: builds.basic
-    },
-    hexatank: {
-      path: "hy",
-      build: builds.basic
-    },
-    octotank: {
-      path: "hyy",
-      build: "3/3/0/7/8/7/9/3/1/1"
-    },
-    hexatrapper: {
-      path: "hyi",
-      build: builds.basic
-    },
-    triangle: {
-      path: "hu",
-      build: builds.basic
-    },
-    booster: {
-      path: "huu",
-      build: builds.triangle
-    },
-    falcon: {
-      path: "hui",
-      build: builds.triangle
-    },
-    auto3: {
-      path: "hui",
-      build: builds.basic
-    },
-    auto4: {
-      path: "hii",
-      build: builds.basic
-    },
-    banshee: {
-      path: "huih",
-      build: builds.basic
-    },
-    trapguard: {
-      path: "hh",
-      build: builds.basic
-    },
-    buchwhacker: {
-      path: "hhy",
-      build: builds.basic
-    },
-    gunnertrapper: {
-      path: "hhu",
-      build: builds.basic
-    },
-    conqueror: {
-      path: "hhj",
-      build: builds.basic
-    },
-    bulwark: {
-      path: "hhk",
-      build: builds.basic
-    },
-    parapet: {
-      path: "hhjy",
-      build: "3/3/0/7/8/7/8/5/1/0"
-    },
-    tritrapper: {
-      path: "hj",
-      build: builds.basic
-    },
-    fortress: {
-      path: "hjy",
-      build: builds.basic
-    },
-    septatrapper: {
-      path: "hji",
-      build: builds.basic
-    },
-    tripletwin: {
-      path: "hk",
-      build: builds.basic
-    },
-    director: {
-      path: "j",
-      build: builds.basic
-    },
-    pounder: {
-      path: "k",
-      build: builds.basic
-    },
-    automingler: {
-      path: "hykj",
-      build: "2/3/2/7/8/7/9/3/1/0"
-    },
-    mingler: {
-      path: "hyk",
-      build: builds.basic
-    },
-    underseer: {
-      path: "ji",
-      build: builds.basic
-    },
-    rocketeer: {
-      path: "khk",
-      build: builds.basic
-    },
-    destroyer: {
-      path: "ky",
-      build: builds.basic
-    },
-    launcher: {
-      path: "kh",
-      build: builds.basic
-    },
-    gale: {
-      path: "hyyi",
-      build: "3/3/0/7/8/7/9/3/1/1"
-    },
-
-    gunner: {
-      path: "ii",
-      build: builds.basic
-    },
-    nailgun: {
-      path: "iiu",
-      build: builds.basic
-    },
-    pincer: {
-      path: "iiuk",
-      build: builds.basic
-    },
-    nona: {
-      path: "hjiy",
-      build: builds.basic
-    },
-    septamachine: {
-      path: "hjiu",
-      build: builds.basic
-    },
-    assassin: {
-      path: "uy",
-      build: builds.basic
-    },
-    stalker: {
-      path: "uyi",
-      build: builds.basic
-    },
-    healer: {
-      path: "x",
-      build: builds.basic
-    },
-
-    overseer: {
-      path: "jy",
-      build: builds.basic
-    },
-    cruiser: {
-      path: "ju",
-      build: builds.basic
-    },
-    spawner: {
-      path: "jh",
-      build: builds.basic
-    },
-    directordrive: {
-      path: "jj",
-      build: builds.basic
-    },
-    honcho: {
-      path: "jk",
-      build: builds.basic
-    },
-    manager: {
-      path: "jx",
-      build: builds.basic
-    },
-    foundry: {
-      path: "jh",
-      build: builds.basic
-    },
-    topbanana: {
-      path: "jh",
-      build: builds.basic
-    },
-    shopper: {
-      path: "jh k",
-      build: builds.basic
-    },
-    megaspawner: {
-      path: "jhi",
-      build: builds.basic
-    },
-    ultraspawner: {
-      path: "jhiy",
-      build: builds.basic
-    },
-    chemist: {
-      path: [[2, 3], [1, 2], [1, 2]],
-      build: "3/3/0/7/8/7/9/3/1/1"
-    },
-    jerker: {
-      path: [[2, 1], [3, 1], [2, 3], [3, 3]],
-      build: builds.smasher
-    },
-    limpet: {
-      path: [[2, 3], [1, 2], [1, 1]],
-      build: builds.smasher
-    }
+    basic: { path: "", build: "" },
+    pursuer: { path: "uyiy", build: "0/0/0/0/0/0/0/9/0/0" },
+    anni: { path: "kyu", build: builds.basic },
+    shotgun: { path: "kj", build: builds.basic },
+    penta: { path: "yuy", build: builds.basic },
+    spread: { path: "yuu", build: builds.basic },
+    octo: { path: "hyyc", build: "3/3/0/7/8/7/9/3/1/1" },
+    autogunner: { path: "iiy", build: builds.basic },
+    triplet: { path: "yuj", build: builds.basic },
+    predator: { path: "uuy", build: builds.basic },
+    triplex: { path: "yjy", build: builds.basic },
+    quadruplex: { path: "yju", build: builds.basic },
+    machinegunner: { path: "iih", build: builds.basic },
+    beekeeper: { path: "iyi", build: builds.basic },
+    atomizer: { path:"ihi", build: builds.basic },
+    focal: { path:"ihh", build: builds.basic },
+    cyclone: { path: "hyuc", build: builds.basic },
+    dust_storm: { path: "hyuuc", build: builds.basic },
+    autosmasher: { path: ["r", [3, 3], "i"], build: builds.basic },
+    septatrap: { path: "hjic", build: "0/6/0/9/9/9/9" },
+    obliterator: { path: "vkyuy", build: builds.basic },
+    compound: { path: "kyui", build: builds.basic },
+    wiper: { path: "kyuj", build: builds.basic },
+    stomper: { path: ["k", "y", "u", [1, 3]], build: builds.basic },
+    autoanni: { path: ["k", "y", "u", [2, 3]], build: builds.basic },
+    shaver: { path: ["k", "y", "u", [2, 4]], build: builds.basic },
+    eradicator: { path: ["k", "y", "u", [1, 4]], build: builds.basic },
+    whirlwind: { path: "chyuk", build: "9/9/0/0/0/0/9" },
+    tempest: { path: "chyuh", build: "9/9/0/0/0/0/9" },
+    septamech: { path: "chjkh", build: "9/9/0/0/0/0/9" },
+    doubleequalizer: { path: "yjyk", build: "9/9/0/0/0/0/9" },
+    rigger: { path: "yjkk", build: "9/9/0/0/0/0/9" },
+    doublespread: { path: "yuuy", build: "9/9/0/0/0/0/9" },
+    palisade: { path: ["h", "j", "y", [3, 3]], build: "9/9/0/0/0/0/9" },
+    megasmasher: { path: ["r", [3, 3], "y"], build: builds.smasher },
+    spike: { path: ["r", [3, 3], "u"], build: builds.basic },
+    autoshasher: { path: ["r", [3, 3], "i"], build: builds.basic },
+    landmine: { path: ["r", [3, 3], "h"], build: builds.basic },
+    thorn: { path: ["r", [2, 3], "u", "y"], build: builds.basic },
+    megaspike: { path: ["r", [2, 3], "u", "u"], build: builds.basic },
+    claymore: { path: ["r", [2, 3], "u", "i"], build: builds.basic },
+    spear: { path: ["r", [2, 3], "u", "j"], build: builds.basic },
+    prick: { path: ["r", [2, 3], "u", "k"], build: builds.basic },
+    slammer: { path: [[2, 3], "k", "y"], build: "8/10/12/0/0/0/0/12" },
+    basher: { path: [[2, 3], "j", "j"], build: "8/10/12/0/0/0/0/12" },
+    physician: { path: [[2, 3], [3, 3]], build: "0/12/0/0/0/0/12/12/3/3" },
+    toppler: { path: "uijh", build: builds.basic },
+    crack: { path: "yuyj", build: builds.basic },
+    autooperator: { path: [[1, 3], "j", "j", [2, 3]], build: builds.basic },
+    lorry: { path: "ihyy", build: "3/3/0/7/8/7/9/3/1/1" },
+    engineer: { path: "kui", build: builds.basic },
+    assembler: { path: "kuj", build: builds.basic },
+    architect: { path: "kuk", build: builds.basic },
+    auto5: { path: "hiy", build: builds.basic },
+    mega3: { path: "hiu", build: builds.basic },
+    auto6: { path: "hiiy", build: builds.basic },
+    auto7: { path: "hiyy", build: builds.basic },
+    mega5: { path: "hiyu", build: builds.basic },
+    autoauto4: { path: "hiii", build: builds.basic },
+    hurler3: { path: "hiui", build: builds.basic },
+    batter4: { path: "hiiu", build: builds.basic },
+    skimmer: { path: "khy", build: builds.basic },
+    twister: { path: "khu", build: builds.basic },
+    swarmer: { path: "khi", build: builds.basic },
+    sidewinder: { path: "khh", build: builds.basic },
+    fieldgun: { path: "khj", build: builds.basic },
+    spinner: { path: "khju", build: builds.basic },
+    helix_ar: { path: "khuh", build: builds.basic },
+    hypertwister: { path: "khui", build: builds.basic },
+    gyro: { path: "khuk", build: builds.basic },
+    coli: { path: ["k", "h", "u", [3, 3]], build: builds.basic },
+    hyperskimmer: { path: "khyi", build: builds.basic },
+    skidder: { path: "khjy", build: builds.basic },
+    ream: { path: "khyh", build: builds.basic },
+    hyperswarmer: { path: "khih", build: builds.basic },
+    molotov: { path: "khij", build: builds.basic },
+    firework: { path: "khky", build: builds.basic },
+    levi: { path: "khkh", build: builds.basic },
+    hypercluster: { path: ["k", "h", [4, 2], "h"], build: builds.basic },
+    neutron: { path: ["k", "h", [4, 2], [1, 4]], build: builds.basic },
+    overczar: { path: "jyyy", build: builds.basic },
+    infestor: { path: "jii", build: "0/0/3/9/9/9/9/3" },
+    tyrant: { path: "jyyk", build: builds.basic },
+    autooverlord: { path: "jyyj", build: builds.basic },
+    megaautooverseer: { path: "jyiy", build: builds.basic },
+    tripleautooverseer: { path: "jyiu", build: builds.basic },
+    tripleautopen: { path: "jyiu", build: builds.basic },
+    autooverdrive: { path: "jyhh", build: builds.basic },
+    headman: { path: "jkyy", build: builds.basic },
+    overcheese: { path: "jkyu", build: builds.basic },
+    overstorm: { path: "jjyu", build: builds.basic },
+    diviner: { path: "jiyy", build: builds.basic },
+    autonecro: { path: "jiyi", build: builds.basic },
+    necrodrive: { path: "jiyh", build: builds.basic },
+    megaautounderdrive: { path: "jiiy", build: builds.basic },
+    tripleautounderdrive: { path: "jiiu", build: builds.basic },
+    pentamancer: { path: "jiky", build: builds.basic },
+    pentadrive: { path: "jikh", build: builds.basic },
+    warlock: { path: "jikj", build: builds.basic },
+    autopentaseer: { path: "jiki", build: builds.basic },
+    warship: { path: "juuy", build: builds.basic },
+    battlerdrive: { path: "jjiu", build: builds.basic },
+    bismarck: { path: "juku", build: builds.basic },
+    proddrive: { path: "jjjj", build: builds.basic },
+    manufacture: { path: "jukj", build: builds.basic },
+    dirigible: { path: "jukk", build: builds.basic },
+    autobattleship: { path: "juhh", build: builds.basic },
+    autoprod: { path: "juki", build: builds.basic },
+    autocruiserdrive: { path: "jjih", build: builds.basic },
+    rocket: { path: "huuy", build: "8/8/0/0/0/0/8/8/2/8" },
+    fighter: { path: "huy", build: builds.triangle },
+    bomber: { path: "huh", build: builds.triangle },
+    autotriangle: { path: "huj", build: builds.triangle },
+    surfer: { path: "huk", build: builds.triangle },
+    eagle: { path: "kk", build: builds.triangle },
+    phoenix: { path: "ihu", build: builds.triangle },
+    vulture: { path: "uij", build: builds.triangle },
+    browser: { path: "huky", build: builds.triangle },
+    surferdrive: { path: "huki", build: builds.triangle },
+    roller: { path: "hukh", build: builds.triangle },
+    strider: { path: "hukk", build: builds.triangle },
+    megaautotriangle: { path: "hujy", build: builds.triangle },
+    tripleautotriangle: { path: "huju", build: builds.triangle },
+    autofighter: { path: "huji", build: builds.triangle },
+    autobomber: { path: "hujk", build: builds.triangle },
+    kicker: { path: "uikj", build: builds.triangle },
+    electrocutor: { path: "uiki", build: builds.triangle },
+    autoeagle: { path: "kkk", build: builds.triangle },
+    griffin: { path: "kkh", build: builds.triangle },
+    autoassassin: { path: "uyh", build: builds.basic },
+    single: { path: "uyj", build: builds.basic },
+    twin: { path: "y", build: builds.basic },
+    doubletwin: { path: "yy", build: builds.basic },
+    tripleshot: { path: "yu", build: builds.basic },
+    sniper: { path: "u", build: builds.basic },
+    ranger: { path: "uyy", build: builds.basic },
+    machinegun: { path: "i", build: builds.basic },
+    sprayer: { path: "ih", build: builds.basic },
+    redistributor: { path: "ihy", build: builds.basic },
+    flankguard: { path: "h", build: builds.basic },
+    hexatank: { path: "hy", build: builds.basic },
+    octotank: { path: "hyy", build: "3/3/0/7/8/7/9/3/1/1" },
+    hexatrapper: { path: "hyi", build: builds.basic },
+    triangle: { path: "hu", build: builds.basic },
+    booster: { path: "huu", build: builds.triangle },
+    falcon: { path: "hui", build: builds.triangle },
+    auto3: { path: "hui", build: builds.basic },
+    auto4: { path: "hii", build: builds.basic },
+    banshee: { path: "huih", build: builds.basic },
+    trapguard: { path: "hh", build: builds.basic },
+    buchwhacker: { path: "hhy", build: builds.basic },
+    gunnertrapper: { path: "hhu", build: builds.basic },
+    conqueror: { path: "hhj", build: builds.basic },
+    bulwark: { path: "hhk", build: builds.basic },
+    parapet: { path: "hhjy", build: "3/3/0/7/8/7/8/5/1/0" },
+    tritrapper: { path: "hj", build: builds.basic },
+    fortress: { path: "hjy", build: builds.basic },
+    septatrapper: { path: "hji", build: builds.basic },
+    tripletwin: { path: "hk", build: builds.basic },
+    director: { path: "j", build: builds.basic },
+    pounder: { path: "k", build: builds.basic },
+    automingler: { path: "hykj", build: "2/3/2/7/8/7/9/3/1/0" },
+    mingler: { path: "hyk", build: builds.basic },
+    underseer: { path: "ji", build: builds.basic },
+    rocketeer: { path: "khk", build: builds.basic },
+    destroyer: { path: "ky", build: builds.basic },
+    launcher: { path: "kh", build: builds.basic },
+    gale: { path: "hyyi", build: "3/3/0/7/8/7/9/3/1/1" },
+    gunner: { path: "ii", build: builds.basic },
+    nailgun: { path: "iiu", build: builds.basic },
+    pincer: { path: "iiuk", build: builds.basic },
+    nona: { path: "hjiy", build: builds.basic },
+    septamachine: { path: "hjiu", build: builds.basic },
+    assassin: { path: "uy", build: builds.basic },
+    stalker: { path: "uyi", build: builds.basic },
+    healer: { path: "x", build: builds.basic },
+    overseer: { path: "jy", build: builds.basic },
+    cruiser: { path: "ju", build: builds.basic },
+    spawner: { path: "jh", build: builds.basic },
+    directordrive: { path: "jj", build: builds.basic },
+    honcho: { path: "jk", build: builds.basic },
+    manager: { path: "jx", build: builds.basic },
+    foundry: { path: "jh", build: builds.basic },
+    topbanana: { path: "jh", build: builds.basic },
+    shopper: { path: "jh k", build: builds.basic },
+    megaspawner: { path: "jhi", build: builds.basic },
+    ultraspawner: { path: "jhiy", build: builds.basic },
+    chemist: { path: [[2, 3], [1, 2], [1, 2]], build: "3/3/0/7/8/7/9/3/1/1" },
+    jerker: { path: [[2, 1], [3, 1], [2, 3], [3, 3]], build: builds.smasher },
+    limpet: { path: [[2, 3], [1, 2], [1, 1]], build: builds.smasher }
   };
 
   const options = { start: () => {} };
@@ -928,11 +309,7 @@ const builds = {
 
     let app = false;
     const wasm = function () {
-      return {
-        arrayBuffer: function () {
-          return app;
-        }
-      };
+      return { arrayBuffer: function () { return app; } };
     };
     let lastStatus = 0, statusData = '';
     const getStatus = function (f, s) {
@@ -960,39 +337,27 @@ const builds = {
       return {
         then: function () {
           return {
-            then: function (f) {
-              then = f;
-            }
+            then: function (f) { then = f; }
           };
         }
       };
     };
 
     let ready = false, script = false, o = [], then = function (f) {
-      if (ready) {
-        f();
-      } else {
-        o.push(f);
-      }
+      if (ready) { f(); } else { o.push(f); }
     };
 
     const initializeAndRunQueue = function () {
       ready = true;
-      for (let i = 0, l = o.length; i < l; i++) {
-        o[i]();
-      }
+      for (let i = 0, l = o.length; i < l; i++) { o[i](); }
       o = [];
-      then = function (f) {
-        f();
-      };
+      then = function (f) { f(); };
     };
 
     let prerequisites = 0;
     const onPrerequisiteLoaded = function () {
       prerequisites++;
-      if (prerequisites === 2) {
-        initializeAndRunQueue();
-      }
+      if (prerequisites === 2) { initializeAndRunQueue(); }
     };
 
     realFetch('https://arras.io/app.wasm').then(x => {
@@ -1020,9 +385,7 @@ const builds = {
 
       realFetch('https://arras.io').then(x => x.text()).then(html => {
         const extractedScript = extractScriptFromHtml(html);
-        if (extractedScript) {
-          activateBot(extractedScript);
-        }
+        if (extractedScript) { activateBot(extractedScript); }
       }).catch(err => {
         log('FATAL: Could not fetch from arras.io.', err);
       });
@@ -1037,14 +400,9 @@ const builds = {
 
       let inGame = false;
 
-      // Détection si le bot s'appelle "zombie" (insensible à la casse, ex: zombie 1, ZombieX, etc.)
       const isZombie = config.name && /zombie/i.test(config.name);
       const zombiePhrases = [
-        "Braiiiiins...",
-        "Must consume brains...",
-        "Uuuugh...",
-        "Fresh meat...",
-        "Grrr... brains..."
+        "Braiiiiins...", "Must consume brains...", "Uuuugh...", "Fresh meat...", "Grrr... brains..."
       ];
 
       const internalBotInterface = {
@@ -1481,14 +839,12 @@ const builds = {
         }
       }
 
-      // === MODIFICATION : GESTION DE LA VITESSE DE MOUVEMENT RÉDUITE ===
       let lastMoveState = { W: false, A: false, S: false, D: false };
       let moveTickCounter = 0;
 
       function pathfind(x, y) {
         moveTickCounter++;
-        // On n'actualise les inputs de mouvement qu'une fois sur 2 pour ralentir la réactivité / vitesse ressentie
-        if (moveTickCounter % 1 !== 0) return; // Vitesse , change le chiffre apres Counter pour ralentir plus c haut plus c lent 
+        if (moveTickCounter % 1 !== 0) return;
 
         const angle = getDir(position[0], position[1], x, y);
         let hold = {};
@@ -1562,7 +918,9 @@ const builds = {
           build = [0, 0, 12, 0, 0, 0, 0, 8];
           controller.press("KeyR");
         } else {
-          build = tanks[target.tank].build.split("/");
+          // Utilise le build customisé s'il est spécifié, sinon celui du tank, sinon par défaut
+          const chosenBuild = config.customBuild || (tanks[target.tank] ? tanks[target.tank].build : null) || "0/0/3/9/9/9/9/3";
+          build = chosenBuild.split("/");
         }
 
         let i2 = 0;
@@ -1672,34 +1030,28 @@ const builds = {
           }
 
           if (inGame && config.type === 'follow') {
-            // === COMPORTEMENT SPÉCIAL ZOMBIE ===
             if (isZombie) {
-              // Mouvement erratique de zombie dans tous les sens
               let randomAngle = Math.random() * Math.PI * 2;
               let erraticX = position[0] + Math.cos(randomAngle) * 300;
               let erraticY = position[1] + Math.sin(randomAngle) * 300;
               
               pathfind(erraticX, erraticY);
 
-              // Souris saccadée et erratique
               controller.x = (innerWidth / 2) + (Math.random() - 0.5) * 400;
               controller.y = (innerHeight / 2) + (Math.random() - 0.5) * 400;
               trigger.mousemove(controller.x, controller.y);
 
-              // Autofire activé de force pour attaquer agressivement
               if (!target.autofire) {
                 controller.press("KeyE");
                 lastAutofire = true;
               }
 
-              // Spam de chat zombie toutes les 4 secondes
               if (Date.now() - lastChatAt > 4000) {
                 lastChatAt = Date.now();
                 const randomPhrase = zombiePhrases[Math.floor(Math.random() * zombiePhrases.length)];
                 controller.chat(randomPhrase);
               }
             } else {
-              // === COMPORTEMENT STANDARD ===
               let moveTarget = { x: 0, y: 0 };
               let aimTarget = { x: 0, y: 0 };
               let valid = false;
@@ -1719,10 +1071,6 @@ const builds = {
                   moveTarget.y = aimTarget.y;
                 }
 
-                // Follow Mouse must take priority over the optional
-                // force-follow-player mode. Previously this block always
-                // overwrote the mouse target, so the controller checkbox
-                // appeared to do nothing.
                 if (target.forceFollowPlayer && !target.followMouse) {
                   let angle = Math.atan2(target.mouseY, target.mouseX);
                   let offset = (target.shieldOffset || 0) * 80; 
@@ -2014,7 +1362,7 @@ const builds = {
       });
     } else if (message.type === 'pause') {
       isPaused = message.paused;
-} else if (message.type === 'key_command') {
+    } else if (message.type === 'key_command') {
       const key = message.key;
       if (key === 'KeyX') {
         target.forceFollowPlayer = !target.forceFollowPlayer;
@@ -2029,7 +1377,6 @@ const builds = {
         }
         return; 
       }
-      // ============================
       if (currentBotInterface.simulateKey) {
         currentBotInterface.simulateKey(key);
       }
@@ -2040,8 +1387,6 @@ const builds = {
       target.mouseY = message.mouseY;
       target.mouseDown = message.mouseDown;
       target.rMouseDown = message.rMouseDown;
-      // Accept the explicit field from the updated server while keeping
-      // compatibility with the original "mouse" field.
       target.followMouse = message.followMouse !== undefined
         ? message.followMouse
         : message.mouse;
