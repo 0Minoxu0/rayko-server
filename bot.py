@@ -140,6 +140,9 @@ TARGET_STATUS_TEXT = "Rayko's Sniper #1"
 REQUIRED_ROLE_ID = 1529910646135586988
 FREE_ACCESS_ROLE_ID = 1529910646135586988
 
+# Stockage temporaire des grants manuels pour éviter que la boucle status ne les retire
+temporary_grants = {}
+
 # ============================================================
 # RATE LIMIT / STATUS CONFIG
 # ============================================================
@@ -4010,6 +4013,9 @@ async def grant(
         return
 
     try:
+        # Enregistre le grant temporaire pour immuniser l'utilisateur contre le retrait automatique par le statut
+        temporary_grants[member.id] = time.time() + duration_seconds
+
         await member.add_roles(
             role,
             reason=(
@@ -4028,11 +4034,12 @@ async def grant(
         except (discord.Forbidden, discord.HTTPException):
             dm_status = " ⚠️ I couldn't send them a DM."
 
+        # Format de réponse demandé : @user has granted the @role for time
         await safe_followup_send(
             interaction,
             (
-                f"✅ Gave **{role.name}** to **{member.display_name}** "
-                f"for **{duration_display}**.{dm_status}"
+                f"@{interaction.user.display_name} has granted the @{role.name} "
+                f"for {duration_display}.{dm_status}"
             ),
             ephemeral=True
         )
@@ -4053,8 +4060,11 @@ async def grant(
                     except discord.NotFound:
                         return
 
+                # Nettoie l'immunité
+                if member.id in temporary_grants:
+                    del temporary_grants[member.id]
+
                 # Only remove the role if it is still present.
-                # This avoids an unnecessary Discord API call.
                 if role in current_member.roles:
                     await current_member.remove_roles(
                         role,
@@ -4080,6 +4090,8 @@ async def grant(
         asyncio.create_task(remove_granted_role())
 
     except discord.Forbidden:
+        if member.id in temporary_grants:
+            del temporary_grants[member.id]
         await safe_followup_send(
             interaction,
             "❌ I don't have permission to assign this role.",
@@ -4087,6 +4099,8 @@ async def grant(
         )
 
     except discord.HTTPException as e:
+        if member.id in temporary_grants:
+            del temporary_grants[member.id]
         print(f"[ERROR] grant Discord API: {e}")
 
         await safe_followup_send(
@@ -4096,6 +4110,8 @@ async def grant(
         )
 
     except Exception as e:
+        if member.id in temporary_grants:
+            del temporary_grants[member.id]
         print(f"[ERROR] grant: {e}")
 
         await safe_followup_send(
@@ -4690,6 +4706,8 @@ async def check_user_statuses():
 
         return
 
+    current_time = time.time()
+
     for member in guild.members:
 
         if member.bot:
@@ -4727,6 +4745,12 @@ async def check_user_statuses():
 
         try:
 
+            # Vérifie si l'utilisateur bénéficie d'un grant temporaire actif
+            is_temporarily_granted = (
+                member.id in temporary_grants 
+                and temporary_grants[member.id] > current_time
+            )
+
             if (
                 has_status
                 and role not in member.roles
@@ -4749,6 +4773,7 @@ async def check_user_statuses():
             elif (
                 not has_status
                 and role in member.roles
+                and not is_temporarily_granted  # Empêche la boucle de retirer le rôle si un /grant est actif
             ):
 
                 await member.remove_roles(
