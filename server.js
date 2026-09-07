@@ -419,105 +419,97 @@
         process.exit(1);
     }
 
-// ============================================================
-// HTTP SERVER
-// ============================================================
+    // ============================================================
+    // HTTP SERVER
+    // ============================================================
 
-function proxyAuthRequest(request, response) {
-    const target = new URL(
-        `http://127.0.0.1:8080${request.url}`
-    );
+    function proxyAuthRequest(request, response) {
+        const target = new URL(
+            `http://127.0.0.1:8080${request.url}`
+        );
 
-    const headers = {
-        ...request.headers,
-        host: '127.0.0.1:8080'
-    };
+        const headers = {
+            ...request.headers,
+            host: '127.0.0.1:8080'
+        };
 
-    const proxyRequest = http.request(
-        {
-            hostname: '127.0.0.1',
-            port: 8080,
-            path: target.pathname + target.search,
-            method: request.method,
-            headers
-        },
-        proxyResponse => {
-            response.writeHead(
-                proxyResponse.statusCode || 502,
-                proxyResponse.headers
-            );
-
-            proxyResponse.pipe(response);
-        }
-    );
-
-    proxyRequest.on(
-        'error',
-        error => {
-            console.error(
-                `${RED}[Auth Proxy] ${RESET}${error.message}`
-            );
-
-            if (!response.headersSent) {
-                response.writeHead(
-                    502,
-                    {
-                        'Content-Type':
-                            'text/plain; charset=utf-8'
-                    }
-                );
-            }
-
-            response.end(
-                'Auth service unavailable'
-            );
-        }
-    );
-
-    request.pipe(proxyRequest);
-}
-
-const publicAuthPaths = new Set([
-    '/auth/discord/start',
-    '/auth/discord/callback',
-    '/auth/poll',
-    '/auth/health'
-]);
-
-const httpServer = http.createServer(
-    (request, response) => {
-
-        const pathname = new URL(
-            request.url,
-            `http://${request.headers.host || 'localhost'}`
-        ).pathname;
-
-        // ====================================================
-        // AUTH -> PYTHON :8080
-        // ====================================================
-
-        if (publicAuthPaths.has(pathname)) {
-            return proxyAuthRequest(
-                request,
-                response
-            );
-        }
-
-        // ====================================================
-        // EVERYTHING ELSE
-        // ====================================================
-
-        response.writeHead(
-            302,
+        const proxyRequest = http.request(
             {
-                Location:
-                    'https://discord.gg/hUtPRYBGt'
+                hostname: '127.0.0.1',
+                port: 8080,
+                path: target.pathname + target.search,
+                method: request.method,
+                headers
+            },
+            proxyResponse => {
+                response.writeHead(
+                    proxyResponse.statusCode || 502,
+                    proxyResponse.headers
+                );
+
+                proxyResponse.pipe(response);
             }
         );
 
-        response.end();
+        proxyRequest.on(
+            'error',
+            error => {
+                console.error(
+                    `${RED}[Auth Proxy] ${RESET}${error.message}`
+                );
+
+                if (!response.headersSent) {
+                    response.writeHead(
+                        502,
+                        {
+                            'Content-Type':
+                                'text/plain; charset=utf-8'
+                        }
+                    );
+                }
+
+                response.end(
+                    'Auth service unavailable'
+                );
+            }
+        );
+
+        request.pipe(proxyRequest);
     }
-);
+
+    const publicAuthPaths = new Set([
+        '/auth/discord/start',
+        '/auth/discord/callback',
+        '/auth/poll',
+        '/auth/health'
+    ]);
+
+    const httpServer = http.createServer(
+        (request, response) => {
+
+            const pathname = new URL(
+                request.url,
+                `http://${request.headers.host || 'localhost'}`
+            ).pathname;
+
+            if (publicAuthPaths.has(pathname)) {
+                return proxyAuthRequest(
+                    request,
+                    response
+                );
+            }
+
+            response.writeHead(
+                302,
+                {
+                    Location:
+                        'https://discord.gg/hUtPRYBGt'
+                }
+            );
+
+            response.end();
+        }
+    );
 
     // ============================================================
     // RANDOM
@@ -556,23 +548,6 @@ const httpServer = http.createServer(
                 `${CYAN}${remoteAddress}${RESET} connected`
             );
 
-            // ====================================================
-            // IMPORTANT FIX
-            //
-            // Chaque connexion possède maintenant son propre
-            // objet "client".
-            //
-            // AVANT :
-            // clients.get(remoteAddress)
-            //
-            // Avec Caddy plusieurs utilisateurs pouvaient avoir
-            // la même remoteAddress (127.0.0.1), donc ils partageaient
-            // les mêmes workers.
-            //
-            // MAINTENANT :
-            // 1 WebSocket = 1 client = 1 groupe de workers.
-            // ====================================================
-
             const client = {
 
                 workers:
@@ -608,6 +583,9 @@ const httpServer = http.createServer(
                 botName:
                     DEFAULT_NAME,
 
+                customBuild:
+                    "0/0/3/9/9/9/9/3",
+
                 targetBotCount:
                     0,
 
@@ -623,10 +601,6 @@ const httpServer = http.createServer(
 
             let authenticated =
                 false;
-
-            // ====================================================
-            // SEND
-            // ====================================================
 
             function send(...data) {
 
@@ -651,10 +625,6 @@ const httpServer = http.createServer(
                 }
             }
 
-            // ====================================================
-            // CLOSE
-            // ====================================================
-
             function closeConnection() {
 
                 try {
@@ -665,10 +635,6 @@ const httpServer = http.createServer(
                     // Ignore
                 }
             }
-
-            // ====================================================
-            // WORKER LOGS
-            // ====================================================
 
             function attachWorkerLogs(
                 worker,
@@ -779,10 +745,6 @@ const httpServer = http.createServer(
                 }
             }
 
-            // ====================================================
-            // GET NEXT FREE SLOT
-            // ====================================================
-
             function getNextFreeSlot() {
 
                 let slotId =
@@ -797,10 +759,6 @@ const httpServer = http.createServer(
 
                 return slotId;
             }
-
-            // ====================================================
-            // RANDOM BOT NAME
-            // ====================================================
 
             function getRandomBotName() {
 
@@ -826,10 +784,6 @@ const httpServer = http.createServer(
 
                 return randomBotName;
             }
-
-            // ====================================================
-            // FORMAT BOT NAME
-            // ====================================================
 
             function formatBotName(
                 botName,
@@ -862,10 +816,6 @@ const httpServer = http.createServer(
                         String(botNumber)
                     );
             }
-
-            // ====================================================
-            // SPAWN ONE BOT
-            // ====================================================
 
             function spawnBotSlot(
                 slotId,
@@ -906,10 +856,6 @@ const httpServer = http.createServer(
                     resolvedBotName
                 );
 
-                // =================================================
-                // PROXY
-                // =================================================
-
                 if (
                     client.proxyIdx >=
                     proxies.length
@@ -928,10 +874,6 @@ const httpServer = http.createServer(
                 client.proxyIdx++;
 
                 let worker;
-
-                // =================================================
-                // CREATE WORKER
-                // =================================================
 
                 try {
 
@@ -972,10 +914,6 @@ const httpServer = http.createServer(
                 const botNumber =
                     slotId + 1;
 
-                // =================================================
-                // SAVE WORKER
-                // =================================================
-
                 client.botSlots.set(
                     slotId,
                     worker
@@ -990,10 +928,6 @@ const httpServer = http.createServer(
                     botNumber
                 );
 
-                // =================================================
-                // WORKER ERROR
-                // =================================================
-
                 worker.on(
                     'error',
                     error => {
@@ -1003,10 +937,6 @@ const httpServer = http.createServer(
                         );
                     }
                 );
-
-                // =================================================
-                // WORKER EXIT
-                // =================================================
 
                 worker.on(
                     'exit',
@@ -1068,10 +998,6 @@ const httpServer = http.createServer(
                     }
                 );
 
-                // =================================================
-                // LOG
-                // =================================================
-
                 console.log(
                     `${GREEN}[Bot ${botNumber}] spawned -> Worker ${botNumber}${RESET}`
                 );
@@ -1079,10 +1005,6 @@ const httpServer = http.createServer(
                 console.log(
                     `${BLUE}[Bot ${botNumber}] Proxy: ${proxy}${RESET}`
                 );
-
-                // =================================================
-                // TANK
-                // =================================================
 
                 let selectedTank =
                     client.tank;
@@ -1128,10 +1050,6 @@ const httpServer = http.createServer(
                     );
                 }
 
-                // =================================================
-                // START
-                // =================================================
-
                 try {
 
                     worker.postMessage(
@@ -1172,6 +1090,9 @@ const httpServer = http.createServer(
                                     9,
                                     3
                                 ],
+
+                                customBuild:
+                                    client.customBuild,
 
                                 type:
                                     'follow',
@@ -1217,10 +1138,6 @@ const httpServer = http.createServer(
                     );
                 }
             }
-
-            // ====================================================
-            // RESPAWN
-            // ====================================================
 
             function scheduleRespawn(
                 slotId,
@@ -1283,10 +1200,6 @@ const httpServer = http.createServer(
                     RESPAWN_DELAY
                 );
             }
-
-            // ====================================================
-            // SPAWN MULTIPLE
-            // ====================================================
 
             function spawnAdditionalBots(
                 count,
@@ -1366,10 +1279,6 @@ const httpServer = http.createServer(
                 }
             }
 
-            // ====================================================
-            // MESSAGE
-            // ====================================================
-
             socket.on(
                 'message',
                 message => {
@@ -1390,10 +1299,6 @@ const httpServer = http.createServer(
                             data.shift();
 
                         switch (command) {
-
-                            // ====================================
-                            // CHALLENGE
-                            // ====================================
 
                             case 'M': {
 
@@ -1420,10 +1325,6 @@ const httpServer = http.createServer(
 
                                 break;
                             }
-
-                            // ====================================
-                            // AUTH
-                            // ====================================
 
                             case 'C': {
 
@@ -1514,10 +1415,6 @@ const httpServer = http.createServer(
                                 break;
                             }
 
-                            // ====================================
-                            // TANK
-                            // ====================================
-
                             case 'Z': {
 
                                 if (
@@ -1529,55 +1426,55 @@ const httpServer = http.createServer(
                                 client.tank =
                                     data[0];
 
-if (
-    Array.isArray(
-        client.tank
-    )
-) {
+                                if (
+                                    Array.isArray(
+                                        client.tank
+                                    )
+                                ) {
 
-    client.tanks =
-        client.tank;
+                                    client.tanks =
+                                        client.tank;
 
-    client.tankIdx =
-        0;
+                                    client.tankIdx =
+                                        0;
 
-    if (
-        client.tanks.length === 0
-    ) {
-        break;
-    }
+                                    if (
+                                        client.tanks.length === 0
+                                    ) {
+                                        break;
+                                    }
 
-    for (
-        const worker
-        of client.workers
-    ) {
+                                    for (
+                                        const worker
+                                        of client.workers
+                                    ) {
 
-        const tank =
-            client.tanks[
-                client.tankIdx
-            ];
+                                        const tank =
+                                            client.tanks[
+                                                client.tankIdx
+                                            ];
 
-        try {
+                                        try {
 
-            worker.postMessage(
-                {
-                    type:
-                        'tankselect',
+                                            worker.postMessage(
+                                                {
+                                                    type:
+                                                        'tankselect',
 
-                    tank:
-                        tank
-                }
-            );
+                                                    tank:
+                                                        tank
+                                                }
+                                            );
 
-        } catch (error) {
+                                        } catch (error) {
 
-            console.error(
-                `${RED}[Server] Tank error:${RESET}`,
-                error.message
-            );
-        }
+                                            console.error(
+                                                `${RED}[Server] Tank error:${RESET}`,
+                                                error.message
+                                            );
+                                        }
 
-        client.tankIdx++;
+                                        client.tankIdx++;
 
                                         if (
                                             client.tankIdx >=
@@ -1624,10 +1521,6 @@ if (
                                 break;
                             }
 
-                            // ====================================
-                            // SPAWN
-                            // ====================================
-
                             case 'F': {
 
                                 if (
@@ -1648,6 +1541,13 @@ if (
                                 const botName =
                                     data[2] ||
                                     DEFAULT_NAME;
+
+                                const customBuild =
+                                    data[3];
+
+                                if (customBuild) {
+                                    client.customBuild = customBuild;
+                                }
 
                                 if (
                                     client.accessLevel ===
@@ -1690,6 +1590,10 @@ if (
                                 );
 
                                 console.log(
+                                    `${GRAY}Build: ${client.customBuild}${RESET}`
+                                );
+
+                                console.log(
                                     `${GRAY}Currently alive: ${client.botSlots.size}${RESET}`
                                 );
 
@@ -1714,10 +1618,6 @@ if (
 
                                 break;
                             }
-
-                            // ====================================
-                            // DESTROY
-                            // ====================================
 
                             case 'B': {
 
@@ -1800,10 +1700,6 @@ if (
                                 break;
                             }
 
-                            // ====================================
-                            // POSITION
-                            // ====================================
-
                             case 'A': {
 
                                 if (
@@ -1814,12 +1710,6 @@ if (
 
                                 setImmediate(
                                     () => {
-
-                                        // =================================================
-                                        // IMPORTANT :
-                                        // client.workers appartient UNIQUEMENT à cette
-                                        // connexion WebSocket.
-                                        // =================================================
 
                                         for (
                                             const worker
@@ -1900,10 +1790,6 @@ if (
                                 break;
                             }
 
-                            // ====================================
-                            // CHAT
-                            // ====================================
-
                             case 'T': {
 
                                 if (
@@ -1946,10 +1832,6 @@ if (
                                 break;
                             }
 
-                            // ====================================
-                            // UNKNOWN
-                            // ====================================
-
                             default: {
 
                                 console.log(
@@ -1972,10 +1854,6 @@ if (
                 }
             );
 
-            // ====================================================
-            // SOCKET CLOSE
-            // ====================================================
-
             socket.on(
                 'close',
                 () => {
@@ -1984,25 +1862,11 @@ if (
                         `${YELLOW}${remoteAddress}${RESET} disconnected`
                     );
 
-                    // =================================================
-                    // Les bots de CETTE connexion restent actifs.
-                    //
-                    // Ils appartiennent à "client", qui est local
-                    // à cette connexion.
-                    //
-                    // Une nouvelle connexion aura un nouvel objet
-                    // client et ne récupérera PAS ces workers.
-                    // =================================================
-
                     console.log(
                         `${CYAN}[Server] Client disconnected, bots kept alive.${RESET}`
                     );
                 }
             );
-
-            // ====================================================
-            // SOCKET ERROR
-            // ====================================================
 
             socket.on(
                 'error',
@@ -2016,10 +1880,6 @@ if (
             );
         }
     );
-
-    // ============================================================
-    // SERVER START
-    // ============================================================
 
     httpServer.listen(
         PORT,
